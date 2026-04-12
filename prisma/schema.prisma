@@ -1,0 +1,177 @@
+// ============================================================
+// Байшин А-Я — Database Schema
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  name       String?
+  phone      String?
+  plan       PlanType  @default(FREE)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  projects   Project[]
+
+  @@map("profiles")
+}
+
+model Project {
+  id            String                @id @default(uuid())
+  profile_id    String
+  profile       Profile               @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+  name          String                @default("Миний байшин")
+  questionnaire Json?
+  status        ProjectStatus         @default(DRAFT)
+  created_at    DateTime              @default(now())
+  updated_at    DateTime              @updatedAt
+  assessments   ReadinessAssessment[]
+  roadmap_steps RoadmapStep[]
+  checklist     ChecklistItem[]
+  chat_messages ChatMessage[]
+
+  @@index([profile_id])
+  @@map("projects")
+}
+
+model ReadinessAssessment {
+  id               String   @id @default(uuid())
+  project_id       String
+  project          Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  score            Int
+  label            String
+  risks            Json
+  next_steps       Json
+  recommended_track String
+  budget_notes     Json
+  expert_suggestions Json
+  roadmap_phases   Json
+  created_at       DateTime @default(now())
+
+  @@index([project_id])
+  @@map("readiness_assessments")
+}
+
+model RoadmapStep {
+  id                 String   @id @default(uuid())
+  project_id         String
+  project            Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  phase_number       Int
+  title              String
+  description        String
+  status             StepStatus @default(PENDING)
+  tasks              Json
+  estimated_duration String?
+  expert_needed      Boolean   @default(false)
+  expert_type        String?
+  order_index        Int
+  created_at         DateTime  @default(now())
+
+  @@index([project_id])
+  @@map("roadmap_steps")
+}
+
+model ChecklistItem {
+  id          String   @id @default(uuid())
+  project_id  String
+  project     Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  phase       Int
+  category    String
+  title       String
+  description String
+  completed   Boolean  @default(false)
+  order_index Int
+  created_at  DateTime @default(now())
+
+  @@index([project_id])
+  @@map("checklist_items")
+}
+
+model ChatMessage {
+  id         String   @id @default(uuid())
+  project_id String
+  project    Project  @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  role       MessageRole
+  content    String
+  created_at DateTime @default(now())
+
+  @@index([project_id])
+  @@map("chat_messages")
+}
+
+model ContentArticle {
+  id        String   @id @default(uuid())
+  category  String
+  title     String
+  slug      String   @unique
+  summary   String?
+  content   String
+  language  String   @default("mn")
+  published Boolean  @default(false)
+  order_index Int    @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([category])
+  @@index([slug])
+  @@map("content_articles")
+}
+
+model ExpertCategory {
+  id          String    @id @default(uuid())
+  name        String
+  description String
+  icon        String
+  when_needed String
+  referrals   Referral[]
+
+  @@map("expert_categories")
+}
+
+model Referral {
+  id          String         @id @default(uuid())
+  category_id String
+  category    ExpertCategory @relation(fields: [category_id], references: [id])
+  name        String
+  description String?
+  contact     String?
+  location    String?
+  verified    Boolean        @default(false)
+  created_at  DateTime       @default(now())
+
+  @@index([category_id])
+  @@map("referrals")
+}
+
+// Enums
+
+enum PlanType {
+  FREE
+  PAID
+  PREMIUM
+}
+
+enum ProjectStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+}
+
+enum StepStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
