@@ -47,11 +47,21 @@ function normalizeHistory(body: ChatBody): ChatTurn[] {
   return out.slice(-MAX_HISTORY)
 }
 
+function hasAnyAIKey(): boolean {
+  return Boolean(
+    process.env.GOOGLE_API_KEY ||
+      process.env.GEMINI_API_KEY ||
+      process.env.GROQ_API_KEY ||
+      process.env.ANTHROPIC_API_KEY,
+  )
+}
+
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!hasAnyAIKey()) {
     return NextResponse.json(
       {
-        error: 'AI үйлчилгээ тохируулагдаагүй байна.',
+        error:
+          'AI үйлчилгээ тохируулагдаагүй байна. GOOGLE_API_KEY, GROQ_API_KEY эсвэл ANTHROPIC_API_KEY-ийн ядаж нэгийг тохируулна уу.',
         code: 'missing_api_key',
       },
       { status: 503 },
