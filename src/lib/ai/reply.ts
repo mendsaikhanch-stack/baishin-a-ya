@@ -8,45 +8,36 @@ import {
   type CalcMaterialsInput,
 } from './tools/calculate-material-needs'
 
-const SYSTEM_PROMPT = `Чи Монголд байшингаа барих гэж буй хүнд туслах төлөвлөлтийн зөвлөх.
+const SYSTEM_PROMPT = `Чи бол "Байшин А-Я" туслах. Монголд байшингаа барих гэж буй хүнд төлөвлөх, материал сонгох, төсөв тооцоолох, БНбД ойлгох, мэргэжилтэн олох гэх мэт олон зүйлд тусалдаг.
 
-ХЭРЭГСЭЛ СОНГОХ ДҮРЭМ (Routing):
+# Стиль — амьд яриа
 
-1. get_building_info — БНбД, төслийн өгөгдөл, roadmap, checklist хэрэгтэй бол ЭХЛЭЭД энийг туршина.
-2. calculate_material_needs — тоосго, цемент, элс, бетон зэргийн ТООН тооцоонд ЗААВАЛ энийг ашиглана. Бие даан тооцож бүү бод.
-3. web_search — ЗӨВХӨН доорх нөхцөлд ашиглана:
-   • Одоогийн үнэ ханш ("одоогийн", "өнөөдрийн", "сүүлийн", "үнэ", "ханш" гэсэн үг орсон)
-   • 2026 оны материалын үнэ
-   • Шинэ хууль, дүрэм, стандарт
-   • Зах зээлийн мэдээлэл, банкны хүү
-   • URL эх сурвалж шаардсан асуулт
+Хүнтэй ярилцаж буй мэт найрсаг, байгалийн хэлээр бич. "Та"-гаар эелдэг хандана. Хэт хатуу ёслолын хэллэгээс зайлсхий — туршлагатай нөхөр шиг ойр дотно ярь.
 
-   web_search-ыг ДАРААХ үед БҮҮ ашигла:
-   • Ерөнхий зөвлөгөө
-   • roadmap/checklist (get_building_info-ыг туршина)
-   • Материалын цэвэр математик тооцоо (calculate_material_needs-ыг ашигла)
-   • get_building_info нь found:true буцаасан бол
+- Жижиг асуултад жижиг хариулт (1–3 өгүүлбэр). Том сэдэвт л дэлгэрэнгүй ор.
+- Шаардлагагүй үед bullet, гарчиг бүү ашигла. Энгийн ярианд жирийн өгүүлбэрээр хариул.
+- "Сайн байна уу!", "Маш сайн асуулт байна" гэх давтагдмал өрөлтөөс зайлсхий — шууд асуудал руу ор.
+- Мэндэлбэл богинохон буцааж мэндэл, юу хийж чадахаа нэг өгүүлбэрээр товч хэл.
+- Талархал бол богинохон хариу өг ("Зүгээр ээ, өөр тусалж болох зүйл байна уу?").
+- Нөхцөл (талбай, бүс, төсөв) тодорхойгүй бол ТУХАЙН цэгийг л 1–2 асуултаар тодруул — бүгдийг нэг дор бүү асуу.
+- Өмнөх ярианд хэлсэн зүйлийг санаж байгаагаа харуул ("Та өмнө 100 м² гэж хэлсэн тул...").
+- Дэмжлэг үзүүлж бай — "Энэ нь түгээмэл хүндрэл, санаа зоволтгүй", "Сайхан төлөвлөж байна" гэх мэт хүний илэрхийлэл хэрэглэ.
+- Заримдаа богино асуулт буцааж асуу ("Та хэдэн хүний гэр бүлд төлөвлөж байна вэ?") — энэ нь яриаг амьд болгоно.
 
-4. Хэрэв олон tool нэгэн зэрэг хэрэгтэй бол паралл дуудаж болно.
+# Хэрэгсэл сонгох дүрэм
 
-АЮУЛГҮЙ БАЙДЛЫН ДҮРЭМ:
+1. **get_building_info** — БНбД, төсөл, roadmap, checklist хэрэгтэй бол ЭХЛЭЭД энийг туршина.
+2. **calculate_material_needs** — тоосго, цемент, элс, бетон зэргийн ТООН тооцоонд ЗААВАЛ ашиглана. Бие даан тоо бодохгүй.
+3. **web_search** — ЗӨВХӨН: одоогийн үнэ ханш, 2026 оны зах зээл, шинэ хууль/дүрэм, банкны хүү, URL эх сурвалж шаардсан асуулт. Ерөнхий зөвлөгөө, roadmap, математик тооцоонд БҮҮ ашигла.
+4. Олон tool зэрэг хэрэгтэй бол паралл дуудна.
 
-Доорх асуултад заавал анхааруулга өгнө:
-• "яг баталгаатай тооцоо"
-• "БНбД-ийн дагуу яг гарга"
-• "суурь", "даац", "хийц бүтээц"
-• "инженерийн баталгаа"
+# Аюулгүй байдал
 
-Эдгээр тохиолдолд хариултанд ЗААВАЛ дараах санааг оруул:
-"⚠️ Энэ бол урьдчилсан төлөвлөлтийн тооцоо. Албан зураг төсөл, даац, хийц бүтээц, БНбД-ийн баталгаатай тооцоог мэргэжлийн инженерээр баталгаажуулна."
+Даац, хийц бүтээц, суурийн нарийн тооцоо, газар хөдлөл тэсвэрлэлт, инженерийн баталгаатай холбоотой асуулт гарвал дараах анхааруулгыг оруул:
 
-Хариултаа "баталгаатай инженерийн тооцоо" гэж бүү танилцуул — энэ нь зөвхөн төлөвлөлтийн зөвлөгөө гэдгийг тодорхой бич.
+"⚠️ Энэ бол урьдчилсан төлөвлөлтийн тооцоо. Албан зураг төсөл болон даац/хийц бүтээцийн баталгаатай тооцоог мэргэжлийн инженерээр баталгаажуулна."
 
-ХАРИУЛТЫН ХЭВ:
-- Энгийн монгол хэлээр.
-- Эх сурвалжаа дурд (БНбД дугаар, эсвэл интернет URL).
-- Тооцоо хийсэн бол гол тоог тодорхой бич (м³, тонн, ширхэг).
-- Мэргэжлийн инженер/архитекторын зөвлөгөөг орлохгүй гэдгийг сануул.`
+⚠️-г хэт олон давтахгүй — нэг ярианд нэг удаа л хангалттай. Энгийн ярианд тавих шаардлагагүй. Хариултаа "баталгаатай инженерийн тооцоо" гэж бүү танилцуул — энэ нь зөвхөн төлөвлөлтийн зөвлөгөө гэдгийг ил тод байлга.`
 
 const getBuildingInfoTool: Anthropic.Tool = {
   name: 'get_building_info',
@@ -200,6 +191,17 @@ function pickModel(message: string, context: unknown): string {
   return strongHits >= STRONG_HINT_THRESHOLD ? strongModel : defaultModel
 }
 
+export type ChatTurn = { role: 'user' | 'assistant'; content: string }
+
+const MAX_HISTORY_TURNS = 10
+
+function buildContextBlock(context: unknown): string | null {
+  if (!context || typeof context !== 'object') return null
+  const json = JSON.stringify(context)
+  if (json === '{}' || json === 'null') return null
+  return `Хэрэглэгчийн төслийн нөхцөл (questionnaire г.м.):\n${json}\n\nЭнэ контекстийг хариулт өгөхдөө анхааралдаа авч, шаардлагагүй бол давтахгүй.`
+}
+
 const MAX_ITERATIONS = 5
 
 type DebugTrace = {
@@ -216,12 +218,20 @@ type DebugTrace = {
 }
 
 export async function getAIReply(
-  message: string,
+  history: ChatTurn[],
   context: unknown,
 ): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY тохируулагдаагүй.')
+  }
+
+  if (history.length === 0) {
+    throw new Error('Хоосон яриа.')
+  }
+  const lastUser = [...history].reverse().find((m) => m.role === 'user')
+  if (!lastUser) {
+    throw new Error('Хэрэглэгчийн мессеж олдсонгүй.')
   }
 
   const startedAt = Date.now()
@@ -240,15 +250,26 @@ export async function getAIReply(
   }
 
   const anthropic = new Anthropic({ apiKey })
-  const model = pickModel(message, context)
+  const model = pickModel(lastUser.content, context)
   trace.model = model
 
-  const messages: Anthropic.MessageParam[] = [
+  const trimmed = history.slice(-MAX_HISTORY_TURNS)
+  const messages: Anthropic.MessageParam[] = trimmed.map((m) => ({
+    role: m.role,
+    content: m.content,
+  }))
+
+  const contextBlock = buildContextBlock(context)
+  const systemBlocks: Anthropic.TextBlockParam[] = [
     {
-      role: 'user',
-      content: `Context: ${JSON.stringify(context ?? {})}\n\nХэрэглэгчийн асуулт: ${message}`,
+      type: 'text',
+      text: SYSTEM_PROMPT,
+      cache_control: { type: 'ephemeral' },
     },
   ]
+  if (contextBlock) {
+    systemBlocks.push({ type: 'text', text: contextBlock })
+  }
 
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     trace.iterations = i + 1
@@ -260,13 +281,7 @@ export async function getAIReply(
       max_tokens: 8192,
       thinking: { type: 'adaptive' },
       output_config: { effort: 'medium' },
-      system: [
-        {
-          type: 'text',
-          text: SYSTEM_PROMPT,
-          cache_control: { type: 'ephemeral' },
-        },
-      ],
+      system: systemBlocks,
       tools: [getBuildingInfoTool, calculateMaterialNeedsTool, ...SERVER_TOOLS],
       messages,
     })

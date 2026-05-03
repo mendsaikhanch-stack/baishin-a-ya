@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getAIReply } from '@/lib/ai/reply'
+import { getAIReply, type ChatTurn } from '@/lib/ai/reply'
 
 export const maxDuration = 60
 export const runtime = 'nodejs'
@@ -10,19 +10,41 @@ type ChatBody = {
   context?: unknown
 }
 
-function extractMessage(body: ChatBody): string | null {
-  if (typeof body.message === 'string' && body.message.trim()) {
-    return body.message.trim()
-  }
+const MAX_HISTORY = 20
+const MAX_CONTENT_LEN = 4000
+
+function normalizeHistory(body: ChatBody): ChatTurn[] {
+  const out: ChatTurn[] = []
+
   if (Array.isArray(body.messages)) {
-    for (let i = body.messages.length - 1; i >= 0; i--) {
-      const m = body.messages[i] as { role?: string; content?: unknown }
-      if (m && m.role === 'user' && typeof m.content === 'string' && m.content.trim()) {
-        return m.content.trim()
+    for (const raw of body.messages) {
+      if (!raw || typeof raw !== 'object') continue
+      const m = raw as { role?: unknown; content?: unknown }
+      if (
+        (m.role === 'user' || m.role === 'assistant') &&
+        typeof m.content === 'string' &&
+        m.content.trim()
+      ) {
+        out.push({
+          role: m.role,
+          content: m.content.trim().slice(0, MAX_CONTENT_LEN),
+        })
       }
     }
   }
-  return null
+
+  if (typeof body.message === 'string' && body.message.trim()) {
+    const trimmed = body.message.trim().slice(0, MAX_CONTENT_LEN)
+    if (out.length === 0 || out[out.length - 1].content !== trimmed) {
+      out.push({ role: 'user', content: trimmed })
+    }
+  }
+
+  while (out.length > 0 && out[0].role !== 'user') {
+    out.shift()
+  }
+
+  return out.slice(-MAX_HISTORY)
 }
 
 export async function POST(req: Request) {
@@ -46,8 +68,8 @@ export async function POST(req: Request) {
     )
   }
 
-  const message = extractMessage(body)
-  if (!message) {
+  const history = normalizeHistory(body)
+  if (history.length === 0 || history[history.length - 1].role !== 'user') {
     return NextResponse.json(
       {
         error: 'Хоосон асуулт. message эсвэл messages талбар шаардлагатай.',
@@ -58,7 +80,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const reply = await getAIReply(message, body.context ?? {})
+    const reply = await getAIReply(history, body.context ?? {})
     return NextResponse.json({ reply })
   } catch (e) {
     const err = e as Error

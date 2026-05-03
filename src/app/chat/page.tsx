@@ -6,14 +6,18 @@ import { cn } from "@/lib/utils";
 import { Send, Bot, User, Shield, Loader2 } from "lucide-react";
 import t from "@/i18n/mn";
 
+const HISTORY_LIMIT = 10;
+
+type ChatTurn = { role: "user" | "assistant"; content: string };
+
 async function getAIResponse(
-  message: string,
+  messages: ChatTurn[],
   context: unknown,
 ): Promise<string> {
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, context }),
+    body: JSON.stringify({ messages, context }),
   });
 
   if (!res.ok) {
@@ -48,8 +52,16 @@ export default function ChatPage() {
     addChatMessage("user", userMessage);
     setIsLoading(true);
 
+    const history: ChatTurn[] = [
+      ...chatMessages.map((m): ChatTurn => ({
+        role: m.role,
+        content: m.content,
+      })),
+      { role: "user" as const, content: userMessage },
+    ].slice(-HISTORY_LIMIT);
+
     try {
-      const response = await getAIResponse(userMessage, { questionnaire });
+      const response = await getAIResponse(history, { questionnaire });
       addChatMessage("assistant", response);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Алдаа гарлаа.";
