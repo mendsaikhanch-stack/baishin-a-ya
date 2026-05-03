@@ -50,6 +50,13 @@ export interface QuestionnaireInput {
   familySize: number;
   residenceType: ResidenceType;
   currentStage: CurrentStage;
+  /**
+   * Хэрэглэгчийн ажлын одоогийн төлөв байдлыг чөлөөт текстээр.
+   * Жишээ: "Суурь цутгасан, хана 60% өрсөн, дээвэргүй".
+   * Заавал биш — Chat AI энэ контекстийг ашиглан илүү тохиромжтой
+   * зөвлөгөө өгөхөд хэрэглэнэ.
+   */
+  currentStageDescription?: string;
 }
 
 // --- Assessment Output Types ---

@@ -554,6 +554,26 @@ export default function QuestionnairePage() {
                 onChange={(v) => set("buildMode", v)}
               />
 
+              <div className="mt-2">
+                <FieldLabel
+                  label="Ажил эхлүүлсэн бол одоогийн төлөвөө товч бичнэ үү (заавал биш)"
+                  hint="Жишээ: «Суурь цутгасан, хана 60% өрсөн, дээвэргүй» эсвэл «Зөвхөн фундамент цутгасан»"
+                />
+                <textarea
+                  rows={3}
+                  maxLength={500}
+                  value={q.currentStageDescription ?? ""}
+                  onChange={(e) =>
+                    set("currentStageDescription", e.target.value)
+                  }
+                  placeholder="Жишээ нь: Суурь, хана дууссан, дээвэр карказтай"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none resize-none"
+                />
+                <p className="text-[11px] text-gray-400 mt-1 text-right">
+                  {(q.currentStageDescription ?? "").length} / 500
+                </p>
+              </div>
+
               {/* Final disclaimer before submit */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
                 <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
