@@ -213,9 +213,8 @@ export default function QuestionnairePage() {
   const totalSteps = STEP_META.length;
   const isLast = step === totalSteps - 1;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const set = (key: keyof QuestionnaireInput, value: any) =>
-    setField(key, value);
+  const set = (key: keyof QuestionnaireInput, value: unknown) =>
+    setField(key, value as QuestionnaireInput[typeof key]);
 
   // ── Validation per step ──
   const canProceed = (): boolean => {

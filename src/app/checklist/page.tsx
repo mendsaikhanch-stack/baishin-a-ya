@@ -19,9 +19,7 @@ export default function ChecklistPage() {
     }
   }, [assessment, router]);
 
-  if (!assessment) return null;
-
-  const { checklistItems } = assessment;
+  const checklistItems = assessment?.checklistItems ?? [];
 
   // Group by phase category
   const grouped = useMemo(() => {
@@ -32,6 +30,8 @@ export default function ChecklistPage() {
     }
     return groups;
   }, [checklistItems]);
+
+  if (!assessment) return null;
 
   const totalItems = checklistItems.length;
   const completedItems = checklistItems.filter(

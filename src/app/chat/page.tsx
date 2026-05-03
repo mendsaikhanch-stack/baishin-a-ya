@@ -6,38 +6,23 @@ import { cn } from "@/lib/utils";
 import { Send, Bot, User, Shield, Loader2 } from "lucide-react";
 import t from "@/i18n/mn";
 
-// MVP: Local AI simulation. Replace with real API call when ready.
 async function getAIResponse(
   message: string,
-  context: string
+  context: unknown,
 ): Promise<string> {
-  // In production, this calls /api/chat
-  // For MVP, return helpful canned responses
-  const lowerMsg = message.toLowerCase();
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, context }),
+  });
 
-  await new Promise((r) => setTimeout(r, 1000)); // simulate delay
-
-  if (lowerMsg.includes("суурь") || lowerMsg.includes("foundation")) {
-    return "Суурийн сонголт газрын нөхцөлөөс ихээхэн хамаарна. Монголын хөлдүү бүсэд суурийг хөлдөлтийн гүнээс (1.5-2.5м) доош цутгах шаардлагатай. Тэгш газарт ленточный суурь, налуу газарт шонгон суурь тохиромжтой байдаг. ⚠️ Суурийн тооцоог заавал бүтээцийн инженерээр хийлгэнэ үү.";
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(data.error || `AI алдаа (${res.status})`);
   }
 
-  if (lowerMsg.includes("материал") || lowerMsg.includes("тоосго") || lowerMsg.includes("блок")) {
-    return "Монголд түгээмэл материалууд:\n\n• **Тоосго** — бат бөх, дулаалга сайн, үнэ дундаж\n• **Блок** — хурдан, хямд, дулаалга шаардлагатай\n• **Каркас (мод)** — хурдан барих, хөнгөн, дулаалга чухал\n• **SIP панел** — орчин үеийн, дулаалга маш сайн, үнэ өндөр\n\nМатериалын сонголт нь төсөв, бүс нутаг, цаг улирлаас хамаарна. Мэргэжлийн архитектортой зөвлөлдөхийг зөвлөж байна.";
-  }
-
-  if (lowerMsg.includes("төсөв") || lowerMsg.includes("зардал") || lowerMsg.includes("мөнгө") || lowerMsg.includes("үнэ")) {
-    return "Байшингийн зардал олон хүчин зүйлээс хамаарна:\n\n• Газрын үнэ: Байршлаас хамаарч маш өөр\n• Барилга: 1м²-д ойролцоогоор 800,000-2,000,000₮\n• Инженерийн систем: Нийт зардлын 15-25%\n• Дотоод засал: Нийт зардлын 20-30%\n\nНийт төсвийн 10-15%-ийг нөөцөд заавал үлдээгээрэй. ⚠️ Нарийн тооцоог мэргэжлийн төсөвчнөөр гаргуулаарай.";
-  }
-
-  if (lowerMsg.includes("зээл") || lowerMsg.includes("банк")) {
-    return "Орон сууцны зээлийн зөвлөгөө:\n\n• Зээлийн сарын төлбөр орлогын 30%-аас хэтрэхгүй байх\n• Урьдчилгаа төлбөр ихэвчлэн 20-30%\n• Хүү жилийн 12-18% (банкнаас хамаарна)\n• Зээлийн хугацаа 10-20 жил\n\nОлон банкнаас үнийн санал авч харьцуулаарай. ⚠️ Санхүүгийн зөвлөгч авахыг зөвлөж байна.";
-  }
-
-  if (lowerMsg.includes("өвөл") || lowerMsg.includes("хавар") || lowerMsg.includes("улирал") || lowerMsg.includes("хугацаа")) {
-    return "Монголын цаг уурт барилгын улирал чухал:\n\n• **Хавар (4-5 сар)**: Суурь цутгахад хамгийн тохиромжтой\n• **Зун (6-8 сар)**: Хана, дээврийн ажилд тохиромжтой\n• **Намар (9-10 сар)**: Дотоод засал хийхэд тохиромжтой\n• **Өвөл (-30°C)**: Бетоны ажил хийхэд тохиромжгүй\n\nСуурийн ажлыг хавар/зунд эхлүүлж, өвлийг дотоод заслын ажилд зарцуулахыг зөвлөж байна.";
-  }
-
-  return "Таны асуултыг хүлээн авлаа. Байшин барилгатай холбоотой дараах сэдвүүдээр тусалж чадна:\n\n• Суурийн сонголт\n• Материалын харьцуулалт\n• Төсвийн төлөвлөлт\n• Улирлын зөвлөмж\n• Зээлийн мэдээлэл\n• Барилгын ерөнхий зөвлөгөө\n\nИлүү нарийвчилсан асуулт асуугаарай! ⚠️ Энэ бол ерөнхий мэдээлэл бөгөөд мэргэжлийн зөвлөгөөг орлохгүй.";
+  const data = (await res.json()) as { reply?: string };
+  return data.reply || "Уучлаарай, хариулт хоосон ирлээ.";
 }
 
 export default function ChatPage() {
@@ -64,14 +49,11 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      const context = JSON.stringify(questionnaire);
-      const response = await getAIResponse(userMessage, context);
+      const response = await getAIResponse(userMessage, { questionnaire });
       addChatMessage("assistant", response);
-    } catch {
-      addChatMessage(
-        "assistant",
-        "Уучлаарай, алдаа гарлаа. Дахин оролдоно уу."
-      );
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Алдаа гарлаа.";
+      addChatMessage("assistant", `Уучлаарай, ${msg} Дахин оролдоно уу.`);
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
