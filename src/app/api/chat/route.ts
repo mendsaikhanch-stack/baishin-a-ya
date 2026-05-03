@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAIReply, type ChatTurn } from '@/lib/ai/reply'
+import { checkChatRateLimit, getClientIp } from '@/lib/rate-limit'
 
 export const maxDuration = 60
 export const runtime = 'nodejs'
@@ -86,6 +87,22 @@ export async function POST(req: Request) {
         code: 'empty_message',
       },
       { status: 400 },
+    )
+  }
+
+  const ip = getClientIp(req)
+  const rl = await checkChatRateLimit(ip)
+  if (!rl.allowed) {
+    const msg =
+      rl.reason === 'minute'
+        ? 'Хэт олон хүсэлт явуулж байна. 1 минутын дараа дахин оролдоно уу.'
+        : 'Өдрийн хүсэлтийн хязгаарт хүрсэн байна. Маргааш дахин оролдоно уу.'
+    return NextResponse.json(
+      { error: msg, code: 'rate_limited', retryAfterSec: rl.retryAfterSec },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rl.retryAfterSec) },
+      },
     )
   }
 
