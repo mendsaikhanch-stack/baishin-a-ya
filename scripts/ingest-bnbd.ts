@@ -13,9 +13,10 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import mammoth from 'mammoth'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { resolve, basename } from 'node:path'
+import { resolve, basename, extname } from 'node:path'
 import { config } from 'dotenv'
 
 config({ path: '.env.local' })
@@ -34,15 +35,17 @@ if (!SUPABASE_URL || !SERVICE_KEY) {
 
 const [, , bnbdCode, pdfArg] = process.argv
 if (!bnbdCode || !pdfArg) {
-  console.error('Usage: npx tsx scripts/ingest-bnbd.ts <bnbd-code> <pdf-path>')
+  console.error('Usage: npx tsx scripts/ingest-bnbd.ts <bnbd-code> <pdf-or-docx-path>')
   process.exit(1)
 }
 
 const pdfPath = resolve(pdfArg)
 if (!existsSync(pdfPath)) {
-  console.error('PDF not found:', pdfPath)
+  console.error('File not found:', pdfPath)
   process.exit(1)
 }
+
+const isDocx = extname(pdfPath).toLowerCase() === '.docx'
 
 type Chapter = { num: number; title: string; body: string }
 type Chunk = {
@@ -162,7 +165,7 @@ function splitChapters(text: string): Chapter[] {
     if (m && !/\.{4,}/.test(trimmed)) {
       const num = parseInt(m[1], 10)
       const title = m[2].trim()
-      const tocMax = tocMap.size > 0 ? Math.max(...tocMap.keys()) : 50
+      const tocMax = tocMap.size > 0 ? Math.max(...Array.from(tocMap.keys())) : 50
       if (num >= nextExpected && num <= tocMax) {
         const tocTitle = tocMap.get(num)
         if (current) chapters.push(current)
@@ -176,6 +179,30 @@ function splitChapters(text: string): Chapter[] {
   }
   if (current) chapters.push(current)
   return chapters
+}
+
+function flatChunks(text: string): Chunk[] {
+  const cleaned = text.trim()
+  const blocks: string[] = []
+  let acc = ''
+  for (const para of cleaned.split(/\n\s*\n/)) {
+    const candidate = acc ? acc + '\n\n' + para : para
+    if (candidate.length > MAX_CHARS && acc.length > 0) {
+      blocks.push(acc)
+      acc = para
+    } else {
+      acc = candidate
+    }
+  }
+  if (acc) blocks.push(acc)
+  const total = blocks.length
+  return blocks.map((text, i) => ({
+    chapterNum: 1,
+    chapterTitle: 'Текст',
+    partIndex: i + 1,
+    totalParts: total,
+    text: text.trim(),
+  }))
 }
 
 function chunkBody(chapter: Chapter): Chunk[] {
@@ -236,23 +263,30 @@ function chunkBody(chapter: Chapter): Chunk[] {
 }
 
 async function main() {
-  // 1. Extract text via pdftotext; fall back to Gemini OCR if scanned.
-  const txtPath = pdfPath.replace(/\.pdf$/i, '.txt')
+  // 1. Extract text. .docx → mammoth, .pdf → pdftotext (with Gemini OCR fallback).
+  const txtPath = pdfPath.replace(/\.(pdf|docx)$/i, '.txt')
   console.log(`[ingest] extracting text → ${basename(txtPath)}`)
-  execFileSync('pdftotext', ['-enc', 'UTF-8', '-layout', pdfPath, txtPath], {
-    stdio: 'inherit',
-  })
-  let raw = readFileSync(txtPath, 'utf8')
-
-  if (raw.trim().length < MIN_TEXT_LEN) {
-    console.warn(
-      `[ingest] pdftotext returned only ${raw.trim().length} chars — falling back to Gemini OCR…`,
-    )
-    raw = await ocrWithGemini(pdfPath)
+  let raw: string
+  if (isDocx) {
+    const result = await mammoth.extractRawText({ path: pdfPath })
+    raw = result.value
     writeFileSync(txtPath, raw, 'utf8')
-    console.log(
-      `[ingest] Gemini OCR produced ${raw.length} chars → ${basename(txtPath)}`,
-    )
+    console.log(`[ingest] mammoth extracted ${raw.length} chars from .docx`)
+  } else {
+    execFileSync('pdftotext', ['-enc', 'UTF-8', '-layout', pdfPath, txtPath], {
+      stdio: 'inherit',
+    })
+    raw = readFileSync(txtPath, 'utf8')
+    if (raw.trim().length < MIN_TEXT_LEN) {
+      console.warn(
+        `[ingest] pdftotext returned only ${raw.trim().length} chars — falling back to Gemini OCR…`,
+      )
+      raw = await ocrWithGemini(pdfPath)
+      writeFileSync(txtPath, raw, 'utf8')
+      console.log(
+        `[ingest] Gemini OCR produced ${raw.length} chars → ${basename(txtPath)}`,
+      )
+    }
   }
 
   // 2. Doc title and chapters.
@@ -262,14 +296,15 @@ async function main() {
   const chapters = splitChapters(raw)
   console.log(`[ingest] found ${chapters.length} chapters`)
 
+  let chunks: Chunk[]
   if (chapters.length === 0) {
-    console.error(
-      'No chapters detected. Inspect the .txt file and adjust the regex.',
+    console.warn(
+      '[ingest] no numbered chapters — falling back to flat character-based chunks',
     )
-    process.exit(1)
+    chunks = flatChunks(raw)
+  } else {
+    chunks = chapters.flatMap(chunkBody)
   }
-
-  const chunks = chapters.flatMap(chunkBody)
   console.log(`[ingest] produced ${chunks.length} chunks (after sub-splitting)`)
 
   // 3. Build records.
@@ -292,7 +327,7 @@ async function main() {
     }
   })
 
-  const previewPath = pdfPath.replace(/\.pdf$/i, '.records.json')
+  const previewPath = pdfPath.replace(/\.(pdf|docx)$/i, '.records.json')
   writeFileSync(previewPath, JSON.stringify(records, null, 2), 'utf8')
   console.log(`[ingest] wrote preview → ${basename(previewPath)}`)
 

@@ -4,6 +4,7 @@ import {
   calculateMaterialNeeds,
   type CalcMaterialsInput,
 } from './calculate-material-needs'
+import { estimate, validateInput } from '@/lib/estimator'
 
 export const TOOL_SCHEMAS: ToolSchema[] = [
   {
@@ -63,6 +64,42 @@ export const TOOL_SCHEMAS: ToolSchema[] = [
       required: ['area_m2', 'material'],
     },
   },
+  {
+    name: 'estimate_house',
+    description:
+      'Бүхэл байшингийн нийт ҮНЭ ба ХУГАЦАА-ны урьдчилсан тооцоо. Хэрэглэгч "хэдэн төгрөг", "хэдэн сая", "хэдэн сар", "хэр зэрэг үнэтэй" гэх мэт асуувал ЗААВАЛ ашиглана. Бие даан тоо БҮҮ бод. Хариу нь price_total, duration_months, materials_top5, margins агуулна.',
+    parameters: {
+      type: 'object',
+      properties: {
+        size_m2: {
+          type: 'number',
+          description: 'Байшингийн нийт талбай (м²). Хязгаар: 20–2000.',
+        },
+        floors: {
+          type: 'integer',
+          description: 'Давхрын тоо: 1, 2 эсвэл 3.',
+        },
+        location: {
+          type: 'string',
+          enum: ['city', 'rural'],
+          description: 'УБ/хот → city, аймаг/хөдөө → rural.',
+        },
+        quality: {
+          type: 'string',
+          enum: ['low', 'medium', 'high'],
+          description:
+            'хямд/энгийн → low, дунд/ердийн → medium, өндөр/тансаг → high. Тодорхойгүй бол medium.',
+        },
+        type: {
+          type: 'string',
+          enum: ['frame', 'block', 'concrete'],
+          description:
+            'карказ/мод/SIP → frame, блок/тоосго → block, цутгамал/бетон → concrete.',
+        },
+      },
+      required: ['size_m2', 'floors', 'location', 'quality', 'type'],
+    },
+  },
 ]
 
 export async function runTool(name: string, input: unknown): Promise<unknown> {
@@ -71,6 +108,11 @@ export async function runTool(name: string, input: unknown): Promise<unknown> {
   }
   if (name === 'calculate_material_needs') {
     return calculateMaterialNeeds(input as CalcMaterialsInput)
+  }
+  if (name === 'estimate_house') {
+    const v = validateInput(input)
+    if (!v.ok) return { ok: false, error: v.error, field: v.field }
+    return estimate(v.value)
   }
   throw new Error(`Unknown tool: ${name}`)
 }
