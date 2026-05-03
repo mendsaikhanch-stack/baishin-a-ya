@@ -1,8 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
+
+const RECENT_KEY = "bayshin:recent-emails";
+const MAX_RECENT = 5;
+
+function loadRecent(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    return Array.isArray(arr) ? arr.filter((x) => typeof x === "string").slice(0, MAX_RECENT) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(email: string) {
+  if (typeof window === "undefined") return;
+  const cur = loadRecent().filter((e) => e !== email);
+  cur.unshift(email);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(cur.slice(0, MAX_RECENT)));
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -11,6 +33,13 @@ export default function LoginPage() {
   const [stage, setStage] = useState<"email" | "code">("email");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [recent, setRecent] = useState<string[]>([]);
+
+  useEffect(() => {
+    const list = loadRecent();
+    setRecent(list);
+    if (list[0]) setEmail(list[0]);
+  }, []);
 
   function getSupabase() {
     return createBrowserClient(
@@ -19,17 +48,21 @@ export default function LoginPage() {
     );
   }
 
-  async function sendCode() {
-    if (!email.trim()) return;
+  async function sendCode(targetEmail?: string) {
+    const value = (targetEmail ?? email).trim();
+    if (!value) return;
     setLoading(true);
     setError(null);
     try {
       const supabase = getSupabase();
       const { error: e } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
+        email: value,
         options: { shouldCreateUser: true },
       });
       if (e) throw e;
+      saveRecent(value);
+      setEmail(value);
+      setRecent(loadRecent());
       setStage("code");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Алдаа гарлаа.");
@@ -65,8 +98,36 @@ export default function LoginPage() {
 
       {stage === "email" && (
         <>
+          {recent.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-xs text-gray-500">Сүүлд ашигласан:</p>
+              <div className="space-y-1">
+                {recent.map((e) => (
+                  <button
+                    key={e}
+                    onClick={() => sendCode(e)}
+                    disabled={loading}
+                    className="w-full text-left px-3 py-2 border border-gray-200 rounded hover:bg-brand-50 hover:border-brand-200 transition-colors text-sm flex items-center justify-between"
+                  >
+                    <span className="truncate">{e}</span>
+                    <span className="text-xs text-brand-600 ml-2">
+                      Код авах →
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 my-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-xs text-gray-400">эсвэл</span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
+            </div>
+          )}
+
           <p className="text-sm text-gray-600">
-            Имэйл хаягаа оруулбал 6-оронтой код илгээнэ.
+            {recent.length > 0
+              ? "Өөр имэйл хаяг ашиглах:"
+              : "Имэйл хаягаа оруулбал 6-оронтой код илгээнэ."}
           </p>
           <input
             type="email"
@@ -76,10 +137,10 @@ export default function LoginPage() {
             className="w-full border border-gray-300 rounded px-3 py-2 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none"
             disabled={loading}
             onKeyDown={(e) => e.key === "Enter" && sendCode()}
-            autoFocus
+            autoFocus={recent.length === 0}
           />
           <button
-            onClick={sendCode}
+            onClick={() => sendCode()}
             disabled={loading || !email.trim()}
             className="w-full bg-brand-600 text-white py-2 rounded disabled:opacity-50"
           >
