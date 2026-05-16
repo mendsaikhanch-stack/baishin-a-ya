@@ -12,6 +12,11 @@ import {
   generateAndStoreReportPDF,
   type PdfOrderInput,
 } from "@/lib/report-pdf-pipeline";
+import {
+  sendOrderPaidEmail,
+  sendOrderUnlockedEmail,
+  type EmailResult,
+} from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -91,11 +96,12 @@ export async function POST(
     );
   }
 
-  // unlocked шилжилт дээр inline PDF үүсгэх учир бүх шаардлагатай талбарыг авна.
+  // unlocked шилжилт дээр inline PDF үүсгэх + email явуулах учир бүх
+  // шаардлагатай талбарыг авна.
   const { data: existing, error: fetchErr } = await supabase
     .from("report_orders")
     .select(
-      "status, admin_note, tier, price_mnt, created_at, project_snapshot",
+      "status, admin_note, tier, price_mnt, created_at, project_snapshot, customer_email, customer_name",
     )
     .eq("order_code", code)
     .maybeSingle();
@@ -174,8 +180,12 @@ export async function POST(
     );
   }
 
+  const orderTier = existing.tier as OrderTier;
+  const orderEmail: string | null = existing.customer_email ?? null;
+  const orderName: string | null = existing.customer_name ?? null;
+
   // ── Inline PDF үүсгэх (зөвхөн unlocked-руу шилжих үед) ──
-  // Best-effort: PDF алдаа гарвал unlock-ыг buцаахгүй — захиалга нээгдсэнээр
+  // Best-effort: PDF алдаа гарвал unlock-ыг буцаахгүй — захиалга нээгдсэнээр
   // үлдэх ба admin "PDF үүсгэх" товчоор дахин үүсгэх боломжтой.
   let pdf: { generated: true; pdf_path: string; size_bytes: number }
     | { generated: false; error: string; code: string }
@@ -184,7 +194,7 @@ export async function POST(
   if (target === "unlocked") {
     const input: PdfOrderInput = {
       order_code: code,
-      tier: existing.tier as OrderTier,
+      tier: orderTier,
       price_mnt: existing.price_mnt,
       created_at: existing.created_at,
       project_snapshot: existing.project_snapshot as PdfOrderInput["project_snapshot"],
@@ -199,11 +209,29 @@ export async function POST(
       : { generated: false, error: result.error, code: result.code };
   }
 
+  // ── Customer email мэдэгдэл (best-effort, шилжилт буцаахгүй) ──
+  // paid       → "Төлбөр баталгаажлаа" email
+  // unlocked   → PDF амжилттай үүссэн тохиолдолд "Тайлан бэлэн боллоо" email
+  let email: EmailResult | null = null;
+  const emailPayload = {
+    order_code: code,
+    customer_email: orderEmail,
+    customer_name: orderName,
+    tier: orderTier,
+    price_mnt: existing.price_mnt,
+  };
+  if (target === "paid") {
+    email = await sendOrderPaidEmail(emailPayload);
+  } else if (target === "unlocked" && pdf?.generated) {
+    email = await sendOrderUnlockedEmail(emailPayload);
+  }
+
   return NextResponse.json({
     ok: true,
     order_code: code,
     status: target,
     from: currentStatus,
     ...(pdf ? { pdf } : {}),
+    ...(email ? { email } : {}),
   });
 }

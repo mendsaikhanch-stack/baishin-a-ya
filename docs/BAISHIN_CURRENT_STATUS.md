@@ -6,6 +6,39 @@
 
 ---
 
+## 🆕 2026-05-16 (8) — Resend email integration
+
+### Шинээр нэмэгдсэн
+- **`resend`** dependency суусан.
+- **`src/lib/email.ts`** — server-only:
+  - `sendOrderPaidEmail(order)` — "Төлбөр баталгаажлаа" mail (захиалгын хуудсанд линктэй)
+  - `sendOrderUnlockedEmail(order)` — "Тайлан бэлэн боллоо" mail
+  - HTML + text аль аль хэлбэртэй; XSS-аас сэргийлж input-уудыг escape
+  - Resend response error-ыг шалгана, exception catch хийнэ
+- **`/api/admin/orders/[code]/status`** route шинэ зан үйл:
+  - `customer_email`, `customer_name` гаргахаар фетч-ыг өргөтгөсөн
+  - `paid` шилжилт → `sendOrderPaidEmail` (best-effort)
+  - `unlocked` + PDF амжилттай үүссэн → `sendOrderUnlockedEmail`
+  - Response-д `email: { sent, id }` эсвэл `email: { sent: false, reason, error? }` талбар нэмэгдсэн
+- **Admin UI** одоо PDF болон email-ийн алдааг хосолсон amber warning-аар харуулдаг:
+  - `no_recipient` → "Хэрэглэгчийн email бүртгэгдээгүй"
+  - `no_config` → "RESEND_API_KEY тохируулагдаагүй"
+  - `send_failed` → Resend-ийн алдааны мессеж
+
+### Env
+- `.env.example`-д:
+  - `RESEND_API_KEY=` (хоосон бол email no-op)
+  - `RESEND_FROM_EMAIL="Байшин А-Я <noreply@baishin.mn>"`
+  - `APP_URL=http://localhost:3000` (email линкэнд)
+
+### Дизайн
+- **Best-effort:** email алдаа гарвал status шилжилт буцаахгүй
+- Email линк нь signed URL биш — `/orders/[code]` хуудас руу ордог. Тэндээс "Тайлан татах" дарвал шинэ 1 цагийн signed URL шууд авна (email хугацаа дуусахгүй, хэдэн ч удаа татаж болно)
+- `customer_email` байхгүй захиалгуудад no-op (form-д email сонголттой)
+- Manual PDF regeneration (PdfPanel) email явуулахгүй — admin өөрөө email явуулах боломжтой
+
+---
+
 ## 🆕 2026-05-16 (7) — Unlock action нь PDF-ыг автоматаар үүсгэдэг болсон
 
 ### Шинээр нэмэгдсэн

@@ -263,13 +263,28 @@ function OrderRow({
       if (!res.ok) throw new Error(data.error || "Үйлдэл амжилтгүй боллоо.");
       setNote("");
 
-      // Unlock үед сервэр inline PDF үүсгэх оролдлого хийсэн. Амжилтгүй
-      // бол захиалгыг нээсэн ч PDF алга байгааг admin-д харуулна.
+      // Inline best-effort үйлдлүүдийн (PDF + email) үр дүнг warning-аар харуулна.
+      const warnings: string[] = [];
       if (data.pdf && data.pdf.generated === false) {
-        setActionWarning(
-          `Захиалга нээгдсэн боловч PDF үүсгэхэд алдаа гарлаа: ${data.pdf.error}. ` +
-            `Доорх "PDF дахин үүсгэх" товчоор дахин оролдоно уу.`,
+        warnings.push(
+          `PDF үүсгэхэд алдаа гарлаа: ${data.pdf.error}. Доорх "PDF дахин үүсгэх" товчоор дахин оролдоно уу.`,
         );
+      }
+      if (data.email && data.email.sent === false) {
+        if (data.email.reason === "no_recipient") {
+          warnings.push(
+            "Хэрэглэгчийн email бүртгэгдээгүй учир мэдэгдэл явуулсангүй.",
+          );
+        } else if (data.email.reason === "no_config") {
+          warnings.push(
+            "RESEND_API_KEY тохируулагдаагүй — email явсангүй (dev/preview).",
+          );
+        } else {
+          warnings.push(`Email явуулахад алдаа: ${data.email.error ?? "тодорхойгүй"}.`);
+        }
+      }
+      if (warnings.length > 0) {
+        setActionWarning(warnings.join(" "));
       }
       onUpdate();
     } catch (e) {
