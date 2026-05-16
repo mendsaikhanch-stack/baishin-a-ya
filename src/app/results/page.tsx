@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useProjectStore } from "@/hooks/useProject";
 import { cn, getReadinessBgColor } from "@/lib/utils";
 import { BUDGET_RANGES } from "@/lib/constants";
+import { buildProjectPreview, formatMnt } from "@/lib/estimate-preview";
 import type { QuestionnaireInput, BudgetRange, RecommendedTrack } from "@/lib/types";
 import {
   AlertTriangle,
@@ -23,6 +22,10 @@ import {
   CheckSquare,
   MessageCircle,
   FileDown,
+  Loader2,
+  FileQuestion,
+  Building2,
+  Calculator,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -125,15 +128,47 @@ function buildProfileItems(q: Partial<QuestionnaireInput>) {
 // ────────────────────────────────────────────
 
 export default function ResultsPage() {
-  const router = useRouter();
-  const { assessment, questionnaire } = useProjectStore();
+  const { assessment, questionnaire, hasHydrated } = useProjectStore();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!assessment) router.push("/questionnaire");
-  }, [assessment, router]);
+  // ── Loading: wait for Zustand persist to rehydrate from localStorage ──
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="flex flex-col items-center gap-3 text-gray-400">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <p className="text-sm">Үр дүнг ачааллаж байна…</p>
+        </div>
+      </div>
+    );
+  }
 
-  if (!assessment) return null;
+  // ── No assessment: show explicit CTA back to questionnaire (no auto-redirect) ──
+  if (!assessment) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 text-center">
+          <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mx-auto mb-4">
+            <FileQuestion className="w-6 h-6" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-900 mb-2">
+            Тооцооны мэдээлэл олдсонгүй
+          </h1>
+          <p className="text-sm text-gray-500 leading-relaxed mb-5">
+            Үр дүнг харахын тулд эхлээд асуумжаа бөглөнө үү. Энэ нь 3-4 минут
+            болно.
+          </p>
+          <Link
+            href="/questionnaire"
+            className="inline-flex items-center justify-center gap-2 w-full py-3 bg-brand-600 text-white font-semibold rounded-xl hover:bg-brand-700 transition-colors"
+          >
+            Асуумж бөглөх
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const {
     readinessScore,
@@ -147,6 +182,7 @@ export default function ResultsPage() {
 
   const headline = getReadinessHeadline(readinessScore);
   const profileItems = buildProfileItems(questionnaire);
+  const projectPreview = buildProjectPreview(questionnaire);
   const displayRisks = topRisks.slice(0, 3);
   const displaySteps = nextSteps.slice(0, 3);
   const previewPhases = roadmapPhases.slice(0, 2);
@@ -204,6 +240,54 @@ export default function ResultsPage() {
       </section>
 
       <div className="max-w-xl mx-auto px-4 py-6 space-y-7">
+        {/* ═══════════════════════════════════════
+            SECTION 1.5 — Project type + estimated budget
+            (Хоёр анхны баримжаа; албан ёсны төсөв БИШ)
+            ═══════════════════════════════════════ */}
+        {projectPreview && (
+          <section className="bg-white rounded-2xl border-2 border-brand-200 p-4 sm:p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-brand-700 mb-3">
+              Таны төслийн анхны баримжаа
+            </p>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-gray-400 leading-none mb-0.5">
+                    Төслийн төрөл
+                  </p>
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {projectPreview.projectTypeLabel}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0">
+                  <Calculator className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] text-gray-400 leading-none mb-0.5">
+                    Төсвийн муж
+                  </p>
+                  <p className="text-sm font-bold text-brand-700">
+                    {formatMnt(projectPreview.budgetMin)} –{" "}
+                    {formatMnt(projectPreview.budgetMax)}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-2.5 flex items-start gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-[11px] text-amber-700 leading-relaxed">
+                Энэ нь зөвхөн анхны баримжаа бөгөөд албан ёсны инженерийн төсөв
+                биш. Эцсийн дүнг мэргэжлийн төсөвчин, архитектортой нягтлаарай.
+              </p>
+            </div>
+          </section>
+        )}
+
         {/* ═══════════════════════════════════════
             SECTION 2 — User profile mirror
             ═══════════════════════════════════════ */}

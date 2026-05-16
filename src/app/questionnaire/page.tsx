@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useProjectStore } from "@/hooks/useProject";
 import { runAssessment } from "@/lib/engine";
 import type { QuestionnaireInput } from "@/lib/types";
-import { PROVINCES } from "@/lib/constants";
+import { PROVINCES, DISCLAIMER_TEXT } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -335,6 +335,7 @@ export default function QuestionnairePage() {
   const { questionnaire, setField, currentStep, setStep, setAssessment } =
     useProjectStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const q = questionnaire;
   const step = currentStep; // 0-3
@@ -386,12 +387,23 @@ export default function QuestionnairePage() {
   };
 
   const handleSubmit = () => {
+    if (!canProceed()) {
+      setSubmitError("Заавал бөглөх талбаруудаа гүйцээгээгүй байна.");
+      return;
+    }
+    setSubmitError(null);
     setIsSubmitting(true);
     try {
       const result = runAssessment(q as QuestionnaireInput);
       setAssessment(result);
       router.push("/results");
-    } catch {
+    } catch (e) {
+      console.error("[questionnaire] runAssessment failed", e);
+      setSubmitError(
+        e instanceof Error
+          ? `Тооцоолоход алдаа гарлаа: ${e.message}`
+          : "Тооцоолоход алдаа гарлаа. Дахин оролдоно уу."
+      );
       setIsSubmitting(false);
     }
   };
@@ -464,7 +476,7 @@ export default function QuestionnairePage() {
           <div className="mt-4">
             <InfoCard
               title="Газар сонгохдоо юуг анхаарах вэ?"
-              intro="Газрын сонголт нийт төсвийн 20-40%-ийг шууд тодорхойлно. Доорх 4 зүйлийг ойлгосны дараа асуултанд хариулбал илүү зөв шийдвэр гарна."
+              intro="Газар бол төслийн суурь — буруу сонговол төсөв 30–50% өсч, бүхэл төсөл дунд замаас гацна. Доорхи 4 хүчин зүйлийг 2 минутад ойлгоод, дараа нь өөрийн нөхцөлөө бөглөнө үү."
               sections={LAND_INFO_SECTIONS}
             />
           </div>
@@ -474,7 +486,7 @@ export default function QuestionnairePage() {
           <div className="mt-4">
             <InfoCard
               title="Байшингаа хэрхэн төлөвлөх вэ?"
-              intro="Талбай, давхар, материал — энэ 3 зүйл нийт зардлын 60-70%-ийг тодорхойлно. Гэр бүл, цаг уур, ашиглалтын зориулалттай уялдуулж сонгох нь чухал."
+              intro="Талбай, давхар, материал — энэ гурван шийдвэр нийт зардлын 60–70%-ийг тогтооно. Барьсны дараа засахад хэт үнэтэй учир сонгохын өмнө доорхи дүгнэлтүүдийг заавал уншаарай."
               sections={HOUSE_INFO_SECTIONS}
             />
           </div>
@@ -484,7 +496,7 @@ export default function QuestionnairePage() {
           <div className="mt-4">
             <InfoCard
               title="Төсвөө хэрхэн зөв тооцох вэ?"
-              intro="Төсөв нь зөвхөн барилгын ажил биш. Газар, дэд бүтэц, нуугдмал зардал, тавилга бүгд багтана. Зээлийн нөхцөл, эхлэх улирал ч мөн адил үнийг өөрчилнө."
+              intro="«Барилгын зардал» гэдэг нь үнэндээ нийт төсвийн 50% орчим. Газар, дэд бүтэц, нуугдмал зардал, зээлийн хүү, улирлын нөлөө — бүгд эцсийн дүнг өөрчилнө. Эхлээд ямар ямар зардлууд багтдагийг бүрэн ойлгоё."
               sections={BUDGET_INFO_SECTIONS}
             />
           </div>
@@ -494,7 +506,7 @@ export default function QuestionnairePage() {
           <div className="mt-4">
             <InfoCard
               title="Бэлэн байдлаа бодитоор үнэлэх нь"
-              intro="Дотроо нэрлэснээсээ илүү бодитоор хариулбал бид танд тохирох дараагийн алхмыг зөв тогтоож өгнө. Удирдлагын арга, гэрээ, бодит хугацаа гурвыг сайн ойлгох нь чухал."
+              intro="Ихэнх хүн өөрийгөө бодит шатнаасаа 1–2 шат түрүүлж бодож, бэлэн биш атлаа ажил эхлүүлж, дунд замдаа гацдаг. Доорхи 4 чиглэлийг үнэн зөвөөр харж, дараагийн алхмаа ухаалгаар тогтоо."
               sections={READINESS_INFO_SECTIONS}
             />
           </div>
@@ -748,11 +760,18 @@ export default function QuestionnairePage() {
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
                 <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-amber-700 leading-relaxed">
-                  Энэ мэдээлэл дээр үндэслэн бид таны бэлэн байдлын оноо,
-                  эрсдэл, дараагийн алхмуудыг тодорхойлно. Энэ нь зөвхөн
-                  чиглүүлэг бөгөөд мэргэжлийн зөвлөгөөг орлохгүй.
+                  {DISCLAIMER_TEXT}
                 </p>
               </div>
+
+              {submitError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-red-700 leading-relaxed">
+                    {submitError}
+                  </p>
+                </div>
+              )}
             </>
           )}
         </div>

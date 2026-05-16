@@ -19,7 +19,10 @@ export default function ChecklistPage() {
     }
   }, [assessment, router]);
 
-  const checklistItems = assessment?.checklistItems ?? [];
+  const checklistItems = useMemo(
+    () => assessment?.checklistItems ?? [],
+    [assessment]
+  );
 
   // Group by phase category
   const grouped = useMemo(() => {

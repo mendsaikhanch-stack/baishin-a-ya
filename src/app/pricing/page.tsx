@@ -1,81 +1,82 @@
-"use client";
-
-import { useState } from "react";
-import { Check, X, Star, Shield, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { Check, Star, Shield, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DISCLAIMER_TEXT } from "@/lib/constants";
 
-const PLANS = [
+type Plan = {
+  id: "free" | "full_pdf" | "premium" | "consultation";
+  name: string;
+  tagline: string;
+  price: string;
+  href: string;
+  cta: string;
+  features: readonly string[];
+  popular?: boolean;
+};
+
+const PLANS: readonly Plan[] = [
   {
-    id: "free" as const,
-    name: "Free",
-    tagline: "Үндсэн тооцоо",
+    id: "free",
+    name: "Үнэгүй preview",
+    tagline: "Эхний шалгалт",
     price: "₮0",
-    period: "",
-    included: [
-      "Үндсэн үнийн диапазон",
-      "Хугацааны тооцоо",
-      "Гол 2 материал",
-      "Өдөрт 3 хүртэл тооцоо",
+    href: "/questionnaire",
+    cta: "Шалгалт эхлэх",
+    features: [
+      "Бэлэн байдлын оноо",
+      "Төслийн төрөл & төсвийн муж",
+      "Гол 3 эрсдэл",
+      "Дараагийн 3 алхам",
     ],
-    excluded: [
-      "AI advisor (summary, suggestion, warning)",
-      "Margin задаргаа (profit, contingency, VAT)",
-      "Бүх 5 материал",
-      "Тооцооны түүх",
-    ],
-    popular: false,
-    comingSoon: false,
   },
   {
-    id: "pro" as const,
-    name: "Pro",
-    tagline: "Бүрэн боломж + AI зөвлөгч",
-    price: "$9.99",
-    period: " / сар",
-    included: [
-      "Хязгааргүй тооцоо",
-      "AI advisor (summary + suggestion + warning)",
-      "Margin бүрэн задаргаа (profit, contingency, VAT)",
-      "Улирлын засвар (өвөл/зун)",
-      "Бүх 5 материалын задаргаа",
-      "Тооцооны түүх (хадгалагдана)",
+    id: "full_pdf",
+    name: "Бүрэн PDF",
+    tagline: "Нэг удаагийн тайлан",
+    price: "₮49,900",
+    href: "/checkout/full_pdf",
+    cta: "PDF захиалах",
+    features: [
+      "9 шаттай бүрэн roadmap",
+      "30–50 даалгаврын checklist",
+      "Төсвийн задаргаа",
+      "Материалын тооцоо",
+      "Эрсдэлийн жагсаалт",
+      "PDF татаж авах",
     ],
-    excluded: [],
     popular: true,
-    comingSoon: false,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    tagline: "Дэлгэрэнгүй тайлан",
+    price: "₮99,000",
+    href: "/checkout/premium",
+    cta: "Premium захиалах",
+    features: [
+      "Бүрэн PDF багц",
+      "Pro questions хэсэг",
+      "Дэлгэрэнгүй материалын spec",
+      "AI чатын 30 хоногийн хандалт",
+    ],
+  },
+  {
+    id: "consultation",
+    name: "Хувийн зөвлөгөө",
+    tagline: "Видео уулзалт",
+    price: "₮299,000",
+    href: "/checkout/consultation",
+    cta: "Зөвлөгөө захиалах",
+    features: [
+      "Premium багц",
+      "1 цаг видео уулзалт",
+      "Таны нөхцөлд тохирсон зөвлөгөө",
+      "Дараа email follow-up",
+    ],
   },
 ];
 
 export default function PricingPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function subscribe() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/stripe/create-checkout-session", {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 401) {
-          window.location.href = "/login?next=/pricing";
-          return;
-        }
-        throw new Error(data.error ?? `HTTP ${res.status}`);
-      }
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error("Stripe checkout URL ирсэнгүй.");
-      }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Алдаа гарлаа.");
-      setLoading(false);
-    }
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
@@ -84,13 +85,14 @@ export default function PricingPage() {
             Багцын үнэ
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Free-ээр эхлэн бэлэн болмогц Pro-руу шилжээрэй. Цуцлах боломжтой.
+            Үнэгүй preview-ээс эхлээд, бэлэн болоход PDF тайлан захиалаарай.
+            Нэг удаагийн төлбөр — захиалга байхгүй.
           </p>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 -mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      <div className="max-w-6xl mx-auto px-4 -mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {PLANS.map((plan) => (
             <div
               key={plan.id}
@@ -116,70 +118,58 @@ export default function PricingPage() {
                   <span className="text-3xl font-bold text-gray-900">
                     {plan.price}
                   </span>
-                  {plan.period && (
-                    <span className="text-sm text-gray-400">{plan.period}</span>
-                  )}
                 </div>
 
                 <ul className="space-y-2.5">
-                  {plan.included.map((f) => (
+                  {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm">
                       <Check className="w-4 h-4 text-success-500 mt-0.5 flex-shrink-0" />
                       <span className="text-gray-700">{f}</span>
-                    </li>
-                  ))}
-                  {plan.excluded.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm">
-                      <X className="w-4 h-4 text-gray-300 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-400">{f}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <div className="p-6 pt-0">
-                {plan.id === "free" ? (
-                  <a
-                    href="/estimate"
-                    className="flex items-center justify-center gap-1.5 w-full py-3 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
-                  >
-                    Үнэгүй эхлэх
-                    <ArrowRight className="w-4 h-4" />
-                  </a>
-                ) : (
-                  <button
-                    onClick={subscribe}
-                    disabled={loading}
-                    className="flex items-center justify-center gap-1.5 w-full py-3 rounded-xl text-sm font-semibold bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-50"
-                  >
-                    {loading ? "Шилжүүлж байна..." : "Pro захиалах"}
-                    {!loading && <ArrowRight className="w-4 h-4" />}
-                  </button>
-                )}
+                <Link
+                  href={plan.href}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 w-full py-3 rounded-xl text-sm font-semibold transition-colors",
+                    plan.id === "free"
+                      ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      : "bg-brand-600 text-white hover:bg-brand-700",
+                  )}
+                >
+                  {plan.cta}
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
           ))}
         </div>
 
-        {error && (
-          <p className="mt-4 text-sm text-red-600 text-center">{error}</p>
-        )}
-
-        <div className="my-10">
+        <div className="my-10 space-y-4">
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
             <div className="flex items-start gap-3">
               <Shield className="w-5 h-5 text-brand-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">
-                  Хүссэн үедээ цуцлах
+                  Гар аргаар төлбөр баталгаажуулна
                 </h3>
                 <p className="text-sm text-gray-500 leading-relaxed">
-                  Account хуудаснаас Pro захиалгаа хүссэн үедээ зогсоох
-                  боломжтой. Цуцалсан тохиолдолд төлсөн хугацааны эцэс хүртэл Pro
-                  үргэлжилнэ.
+                  Захиалга үүсгэсний дараа банкны шилжүүлгийн заавар харагдана.
+                  Манай баг төлбөрийг шалгаад нэг ажлын өдрийн дотор PDF
+                  илгээнэ. Сэтгэл ханамжгүй бол 7 хоногийн дотор бүрэн буцаалт.
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-2.5">
+            <Shield className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-amber-700 leading-relaxed">
+              {DISCLAIMER_TEXT}
+            </p>
           </div>
         </div>
       </div>

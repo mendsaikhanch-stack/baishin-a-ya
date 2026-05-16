@@ -19,7 +19,7 @@ type Props = {
 };
 
 export default function InfoCard({
-  eyebrow = "Эхлээд мэдэх нь зүйтэй",
+  eyebrow = "Эхлээд мэдэх ёстой",
   title,
   intro,
   sections,

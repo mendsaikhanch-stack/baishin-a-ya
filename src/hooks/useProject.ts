@@ -10,6 +10,10 @@ import type {
 import { generateId } from "@/lib/utils";
 
 interface ProjectState {
+  // Hydration guard — true after Zustand persist has rehydrated from localStorage
+  hasHydrated: boolean;
+  setHasHydrated: (v: boolean) => void;
+
   // Questionnaire
   questionnaire: Partial<QuestionnaireInput>;
   currentStep: number;
@@ -41,6 +45,9 @@ interface ProjectState {
 export const useProjectStore = create<ProjectState>()(
   persist(
     (set) => ({
+      hasHydrated: false,
+      setHasHydrated: (v) => set({ hasHydrated: v }),
+
       questionnaire: {},
       currentStep: 0,
       assessment: null,
@@ -88,6 +95,11 @@ export const useProjectStore = create<ProjectState>()(
           projectId: generateId(),
         }),
     }),
-    { name: "baishin-project" }
+    {
+      name: "baishin-project",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    }
   )
 );

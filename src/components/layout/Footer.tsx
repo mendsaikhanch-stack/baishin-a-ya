@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Home } from "lucide-react";
+import { DISCLAIMER_TEXT } from "@/lib/constants";
 
 export default function Footer() {
   return (
@@ -45,9 +46,7 @@ export default function Footer() {
         {/* Disclaimer */}
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-xs text-gray-400 leading-relaxed mb-3">
-            ⚠️ Энэхүү апп нь зөвхөн мэдээлэл, төлөвлөлтийн зорилготой бөгөөд
-            мэргэжлийн архитектор, инженер, барилгын зөвшөөрлийг орлохгүй. Бүх
-            барилга угсралтын ажлыг эрх бүхий мэргэжилтнээр хийлгэнэ үү.
+            ⚠️ {DISCLAIMER_TEXT}
           </p>
           <p className="text-xs text-gray-400">
             © 2024 Байшин А-Я. Бүх эрх хуулиар хамгаалагдсан.

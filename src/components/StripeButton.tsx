@@ -5,15 +5,9 @@ import { useState } from "react";
 type Props = {
   className?: string;
   children?: React.ReactNode;
-  /** When user is not logged in, redirect them here first. */
-  loginRedirect?: string;
 };
 
-export default function StripeButton({
-  className,
-  children,
-  loginRedirect = "/login?next=/pricing",
-}: Props) {
+export default function StripeButton({ className, children }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,10 +19,6 @@ export default function StripeButton({
         method: "POST",
       });
       const data = await res.json();
-      if (res.status === 401) {
-        window.location.href = loginRedirect;
-        return;
-      }
       if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
       if (data.url) {
         window.location.href = data.url;
