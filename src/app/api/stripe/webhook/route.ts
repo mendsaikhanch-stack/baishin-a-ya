@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -11,11 +11,18 @@ function getStripe(): Stripe {
   return new Stripe(key)
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } },
-)
+// Lazy init — module load үед env vars байхгүй бол build crash болохгүй.
+let _supabase: SupabaseClient | null = null
+function supabase(): SupabaseClient {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } },
+    )
+  }
+  return _supabase
+}
 
 async function applySubscriptionState(sub: Stripe.Subscription) {
   const customerId = sub.customer as string
@@ -25,7 +32,7 @@ async function applySubscriptionState(sub: Stripe.Subscription) {
     typeof periodEndUnix === 'number'
       ? new Date(periodEndUnix * 1000).toISOString()
       : null
-  await supabase
+  await supabase()
     .from('users')
     .update({
       plan: active ? 'pro' : 'free',
@@ -74,7 +81,7 @@ export async function POST(req: Request) {
       }
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
-        await supabase
+        await supabase()
           .from('users')
           .update({
             plan: 'free',

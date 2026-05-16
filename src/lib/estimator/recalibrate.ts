@@ -1,11 +1,18 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { HouseType, Quality } from './types'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } },
-)
+// Lazy init — module load үед env vars байхгүй бол build crash болохгүй.
+let _supabase: SupabaseClient | null = null
+function supabase(): SupabaseClient {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } },
+    )
+  }
+  return _supabase
+}
 
 export type PriceUpdate = {
   house_type: HouseType
@@ -30,7 +37,7 @@ export async function recalibratePrices(opts: {
   }
 
   // 1. Current active version
-  const { data: cur, error: curErr } = await supabase
+  const { data: cur, error: curErr } = await supabase()
     .from('price_table')
     .select('version')
     .is('retired_at', null)
@@ -42,20 +49,20 @@ export async function recalibratePrices(opts: {
   const toV = fromV + 1
 
   // 2. Snapshot existing rows for the diff
-  const { data: oldRows } = await supabase
+  const { data: oldRows } = await supabase()
     .from('price_table')
     .select('house_type, quality, base_min, base_max')
     .eq('version', fromV)
     .is('retired_at', null)
 
   // 3. Insert new version rows
-  const { error: insErr } = await supabase.from('price_table').insert(
+  const { error: insErr } = await supabase().from('price_table').insert(
     opts.updates.map((u) => ({ version: toV, ...u })),
   )
   if (insErr) throw new Error(`insert new version failed: ${insErr.message}`)
 
   // 4. Retire prior version
-  const { error: retErr } = await supabase
+  const { error: retErr } = await supabase()
     .from('price_table')
     .update({ retired_at: new Date().toISOString() })
     .eq('version', fromV)
@@ -63,7 +70,7 @@ export async function recalibratePrices(opts: {
   if (retErr) throw new Error(`retire old version failed: ${retErr.message}`)
 
   // 5. Audit log
-  await supabase.from('recalibration_log').insert({
+  await supabase().from('recalibration_log').insert({
     table_name: 'price_table',
     from_version: fromV,
     to_version: toV,
