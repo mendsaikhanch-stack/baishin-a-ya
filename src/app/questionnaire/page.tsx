@@ -34,10 +34,48 @@ import {
   Clock,
 } from "lucide-react";
 import InfoCard from "@/components/questionnaire/InfoCard";
+import ModelCatalog from "@/components/questionnaire/ModelCatalog";
+import { getHouseModel, type HouseModel } from "@/lib/house-models";
+import {
+  MATERIAL_OPTIONS,
+  FLOOR_OPTIONS,
+  RESIDENCE_OPTIONS,
+  BUDGET_OPTIONS,
+  URBAN_RURAL_OPTIONS,
+  SLOPE_OPTIONS,
+  BUILD_MODE_OPTIONS,
+} from "@/lib/questionnaire-options";
 
 // ────────────────────────────────────────────
 // Per-step educational content (info-first UX)
 // ────────────────────────────────────────────
+
+const MODEL_INFO_SECTIONS = [
+  {
+    icon: Home,
+    title: "Загвар бол мөрөөдлийн эхлэл — гэхдээ газартайгаа уялдах ёстой",
+    body:
+      "Ихэнх хүн «ийм харагдах байшинтай болмоор байна» гэж зургаас эхэлдэг. Энэ зөв — эндээс эхэл. Гэхдээ сонгосон загвар чинь газар, төсөв, хөрстэйгөө тохирох эсэхийг бид дараагийн алхмуудад шалгаж, зөрүүг нь шууд хэлж өгнө. Загвар бол гарааны цэг, эцсийн шийдвэр биш.",
+  },
+  {
+    icon: Layers,
+    title: "Давхар, дээврийн хэлбэр өртгийг шууд өөрчилнө",
+    body:
+      "1 давхар: суурь, дээвэр том (зардал ↑) ч шатгүй, ахмад/хүүхдэд тав тухтай. 2 давхар: ижил м²-д суурь, дээвэр бага (-15-20%). Тэгш дээвэр орчин үеийн ч цас, борооны ус зайлуулалт сайн шаардана. Налуу (А-фрэйм) дээвэр цас тогтоохгүй ч дотор талбайг багасгана.",
+  },
+  {
+    icon: Hammer,
+    title: "Сонгосон загвар материалыг тодорхойлдог",
+    body:
+      "Сонгодог дүр төрх → тоосго (бат бөх, 80+ жил, үнэтэй). Хурдан, дулаан → SIP/каркас (1-2 сард босдог). Тэнцвэртэй → блок. Загвар бүрд бид тохирох материалыг урьдчилан сонгож өгнө — дараагийн алхамд өөрчилж болно.",
+  },
+  {
+    icon: Snowflake,
+    title: "Байнга амьдрах vs зуслан — загвараа зориулалтад тааруул",
+    body:
+      "Байнга амьдрах байшин -40°C-д ажиллах изоляц, найдвартай халаалт шаардана. Зуслан хөнгөн, хямд боловч өвөл усны систем хөлдөж болзошгүй. Загварын каталогт зориулалт бүрийн тохирох хувилбарыг тэмдэглэсэн — шүүлтүүрээр ялгаж болно.",
+  },
+];
 
 const LAND_INFO_SECTIONS = [
   {
@@ -154,24 +192,30 @@ const READINESS_INFO_SECTIONS = [
 const STEP_META = [
   {
     id: 1,
+    icon: Home,
+    title: "Загвар сонголт",
+    subtitle: "Ямар байшин барих мөрөөдөлтэй вэ",
+  },
+  {
+    id: 2,
     icon: MapPin,
     title: "Газрын мэдээлэл",
     subtitle: "Газартай эсэх, байршил, нөхцөлийн тухай",
   },
   {
-    id: 2,
-    icon: Home,
-    title: "Байшингийн мэдээлэл",
+    id: 3,
+    icon: Building2,
+    title: "Байшингийн дэлгэрэнгүй",
     subtitle: "Хэмжээ, давхар, материал, зориулалт",
   },
   {
-    id: 3,
+    id: 4,
     icon: Wallet,
     title: "Төсөв ба хугацаа",
     subtitle: "Санхүү, зээл, эхлэх хугацаа",
   },
   {
-    id: 4,
+    id: 5,
     icon: ClipboardList,
     title: "Таны бэлэн байдал",
     subtitle: "Одоогийн шат, барилгын арга",
@@ -350,8 +394,10 @@ export default function QuestionnairePage() {
   const canProceed = (): boolean => {
     switch (step) {
       case 0:
-        return !!(q.landOwned && q.location && q.urbanOrRural && q.landSlope);
+        return !!q.houseModelId;
       case 1:
+        return !!(q.landOwned && q.location && q.urbanOrRural && q.landSlope);
+      case 2:
         return !!(
           q.houseSize &&
           q.houseSize > 0 &&
@@ -361,12 +407,28 @@ export default function QuestionnairePage() {
           q.familySize > 0 &&
           q.residenceType
         );
-      case 2:
-        return !!(q.budgetRange && q.loanStatus && q.plannedStartTime);
       case 3:
+        return !!(q.budgetRange && q.loanStatus && q.plannedStartTime);
+      case 4:
         return !!(q.currentStage && q.buildMode);
       default:
         return false;
+    }
+  };
+
+  // ── Загвар сонгох — material, floors, residenceType, houseSize урьдчилан бөглөнө ──
+  const handleModelSelect = (model: HouseModel | null) => {
+    if (!model) {
+      set("houseModelId", "undecided");
+      return;
+    }
+    set("houseModelId", model.id);
+    set("preferredMaterial", model.material);
+    set("floors", model.floors);
+    set("residenceType", model.residenceType);
+    // Талбайг зөвхөн хоосон үед урьдчилан тавина (хэрэглэгчийн гар оруулгыг дарахгүй)
+    if (!q.houseSize || q.houseSize <= 0) {
+      set("houseSize", model.defaultSize);
     }
   };
 
@@ -475,24 +537,40 @@ export default function QuestionnairePage() {
         {step === 0 && (
           <div className="mt-4">
             <InfoCard
-              title="Газар сонгохдоо юуг анхаарах вэ?"
-              intro="Газар бол төслийн суурь — буруу сонговол төсөв 30–50% өсч, бүхэл төсөл дунд замаас гацна. Доорхи 4 хүчин зүйлийг 2 минутад ойлгоод, дараа нь өөрийн нөхцөлөө бөглөнө үү."
-              sections={LAND_INFO_SECTIONS}
+              title="Байшингаа хэрхэн сонгох вэ?"
+              intro="Юунаас эхлэх вэ? Мэдээж мөрөөдлийнхөө байшингаас. Доорх каталогоос өөрт ойр загвараа сонгоход бид материал, давхар, хэмжээг урьдчилан бөглөж, дараа нь газар, төсөвтэй тань уялдуулж зөвлөнө."
+              sections={MODEL_INFO_SECTIONS}
             />
+            <div className="mt-4">
+              <ModelCatalog
+                selectedId={q.houseModelId}
+                onSelect={handleModelSelect}
+              />
+            </div>
           </div>
         )}
 
         {step === 1 && (
           <div className="mt-4">
             <InfoCard
-              title="Байшингаа хэрхэн төлөвлөх вэ?"
-              intro="Талбай, давхар, материал — энэ гурван шийдвэр нийт зардлын 60–70%-ийг тогтооно. Барьсны дараа засахад хэт үнэтэй учир сонгохын өмнө доорхи дүгнэлтүүдийг заавал уншаарай."
-              sections={HOUSE_INFO_SECTIONS}
+              title="Загвараа газартайгаа уялдуулъя"
+              intro="Та загвараа сонголоо. Одоо тэр мөрөөдөл танай газарт бодитоор тохирох эсэхийг шалгая — газар бол төслийн суурь, буруу сонговол төсөв 30–50% өснө. Доорх 4 хүчин зүйлийг ойлгоод, нөхцөлөө бөглөнө үү."
+              sections={LAND_INFO_SECTIONS}
             />
           </div>
         )}
 
         {step === 2 && (
+          <div className="mt-4">
+            <InfoCard
+              title="Байшингаа нарийвчлан төлөвлөх нь"
+              intro="Талбай, давхар, материал — энэ гурван шийдвэр нийт зардлын 60–70%-ийг тогтооно. Сонгосон загвараас урьдчилан бөглөгдсөн утгуудыг шалгаж, шаардвал өөрийн нөхцөлд тааруулан өөрчилнө үү."
+              sections={HOUSE_INFO_SECTIONS}
+            />
+          </div>
+        )}
+
+        {step === 3 && (
           <div className="mt-4">
             <InfoCard
               title="Төсвөө хэрхэн зөв тооцох вэ?"
@@ -502,7 +580,7 @@ export default function QuestionnairePage() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="mt-4">
             <InfoCard
               title="Бэлэн байдлаа бодитоор үнэлэх нь"
@@ -512,10 +590,11 @@ export default function QuestionnairePage() {
           </div>
         )}
 
-        {/* Fields card */}
+        {/* Fields card — зөвхөн загвар сонгосны дараах алхмуудад */}
+        {step > 0 && (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-6 mt-4 space-y-5">
-          {/* ── Step 1: Газрын мэдээлэл ── */}
-          {step === 0 && (
+          {/* ── Step 2: Газрын мэдээлэл ── */}
+          {step === 1 && (
             <>
               <RadioField
                 label="Та газартай юу?"
@@ -539,10 +618,7 @@ export default function QuestionnairePage() {
 
               <RadioField
                 label="Хот уу, хөдөө юу?"
-                options={[
-                  { value: "urban", label: "Хот, суурин газар" },
-                  { value: "rural", label: "Хөдөө, орон нутаг" },
-                ]}
+                options={URBAN_RURAL_OPTIONS}
                 value={q.urbanOrRural}
                 onChange={(v) => set("urbanOrRural", v)}
                 columns={2}
@@ -551,12 +627,7 @@ export default function QuestionnairePage() {
               <RadioField
                 label="Газрын гадаргуу ямар вэ?"
                 hint="Хараахан мэдэхгүй бол 'Мэдэхгүй' гэж сонгож болно."
-                options={[
-                  { value: "flat", label: "Тэгш" },
-                  { value: "slight", label: "Бага налуу" },
-                  { value: "steep", label: "Их налуу" },
-                  { value: "unknown", label: "Мэдэхгүй" },
-                ]}
+                options={SLOPE_OPTIONS}
                 value={q.landSlope}
                 onChange={(v) => set("landSlope", v)}
                 columns={2}
@@ -564,9 +635,20 @@ export default function QuestionnairePage() {
             </>
           )}
 
-          {/* ── Step 2: Байшингийн мэдээлэл ── */}
-          {step === 1 && (
+          {/* ── Step 3: Байшингийн дэлгэрэнгүй ── */}
+          {step === 2 && (
             <>
+              {getHouseModel(q.houseModelId) && (
+                <div className="bg-brand-50 border border-brand-200 rounded-xl p-3 flex items-start gap-2 -mt-1">
+                  <Home className="w-4 h-4 text-brand-600 mt-0.5 flex-shrink-0" />
+                  <p className="text-xs text-brand-700 leading-relaxed">
+                    «{getHouseModel(q.houseModelId)?.name}» загвараас
+                    урьдчилан бөглөгдсөн. Шаардвал доорх утгуудыг чөлөөтэй
+                    өөрчилнө үү.
+                  </p>
+                </div>
+              )}
+
               <NumberField
                 label="Байшингийн нийт талбай"
                 hint="Дундаж гэр бүлд 80–150 м² хангалттай."
@@ -578,10 +660,7 @@ export default function QuestionnairePage() {
 
               <RadioField
                 label="Хэдэн давхар?"
-                options={[
-                  { value: "1", label: "1 давхар" },
-                  { value: "2", label: "2 давхар" },
-                ]}
+                options={FLOOR_OPTIONS}
                 value={q.floors}
                 onChange={(v) => set("floors", parseInt(v) as 1 | 2)}
                 columns={2}
@@ -590,13 +669,7 @@ export default function QuestionnairePage() {
               <RadioField
                 label="Ямар материалаар барих вэ?"
                 hint="Шийдээгүй бол 'Одоогоор шийдээгүй' сонгоорой — бид зөвлөнө."
-                options={[
-                  { value: "brick", label: "Тоосго" },
-                  { value: "block", label: "Блок" },
-                  { value: "frame", label: "Каркас (мод)" },
-                  { value: "sip", label: "SIP панел" },
-                  { value: "unsure", label: "Одоогоор шийдээгүй" },
-                ]}
+                options={MATERIAL_OPTIONS}
                 value={q.preferredMaterial}
                 onChange={(v) => set("preferredMaterial", v)}
                 columns={2}
@@ -612,10 +685,7 @@ export default function QuestionnairePage() {
 
               <RadioField
                 label="Зориулалт"
-                options={[
-                  { value: "primary", label: "Байнга амьдрах байшин" },
-                  { value: "vacation", label: "Зуслан / амралтын байшин" },
-                ]}
+                options={RESIDENCE_OPTIONS}
                 value={q.residenceType}
                 onChange={(v) => set("residenceType", v)}
                 columns={2}
@@ -623,21 +693,13 @@ export default function QuestionnairePage() {
             </>
           )}
 
-          {/* ── Step 3: Төсөв ба хугацаа ── */}
-          {step === 2 && (
+          {/* ── Step 4: Төсөв ба хугацаа ── */}
+          {step === 3 && (
             <>
               <RadioField
                 label="Нийт төсвийн хэмжээ"
                 hint="Газар, барилга, засал бүгдийг оролцуулсан нийт дүн. Тодорхойгүй бол тэр сонголтыг сонгоорой."
-                options={[
-                  { value: "under_50m", label: "50 сая ₮-с доош" },
-                  { value: "50m_80m", label: "50–80 сая ₮" },
-                  { value: "80m_120m", label: "80–120 сая ₮" },
-                  { value: "120m_180m", label: "120–180 сая ₮" },
-                  { value: "180m_250m", label: "180–250 сая ₮" },
-                  { value: "over_250m", label: "250 сая ₮-с дээш" },
-                  { value: "unknown", label: "Тодорхойгүй" },
-                ]}
+                options={BUDGET_OPTIONS}
                 value={q.budgetRange}
                 onChange={(v) => set("budgetRange", v)}
               />
@@ -671,8 +733,8 @@ export default function QuestionnairePage() {
             </>
           )}
 
-          {/* ── Step 4: Бэлэн байдал ── */}
-          {step === 3 && (
+          {/* ── Step 5: Бэлэн байдал ── */}
+          {step === 4 && (
             <>
               <RadioField
                 label="Одоо ямар шатанд байна?"
@@ -715,23 +777,7 @@ export default function QuestionnairePage() {
 
               <RadioField
                 label="Барилгаа хэрхэн удирдах вэ?"
-                options={[
-                  {
-                    value: "hire",
-                    label: "Баг / компани хөлслөнө",
-                    sub: "Мэргэжлийн хүмүүс бүгдийг хийнэ",
-                  },
-                  {
-                    value: "mixed",
-                    label: "Хосолсон",
-                    sub: "Зарим ажлыг өөрөө, зарим ажлыг хөлслөнө",
-                  },
-                  {
-                    value: "self",
-                    label: "Өөрөө удирдана",
-                    sub: "Ажилчдыг өөрөө хайж, удирдана",
-                  },
-                ]}
+                options={BUILD_MODE_OPTIONS}
                 value={q.buildMode}
                 onChange={(v) => set("buildMode", v)}
               />
@@ -775,6 +821,7 @@ export default function QuestionnairePage() {
             </>
           )}
         </div>
+        )}
       </div>
 
       {/* ── Fixed bottom navigation ── */}

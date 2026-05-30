@@ -3,7 +3,13 @@
 // Server-only тэмдэглэлүүд (жнь. order_code generator) ./orders.server.ts-д.
 // ============================================================
 
+// full_pdf нь retired (PDF одоо үнэгүй export — /api/report/pdf). Хуучин
+// захиалгуудыг харуулахын тулд type/map-д үлдээсэн ч шинээр захиалах боломжгүй
+// (VALID_TIERS-д ороогүй). premium = "Амьд AI зөвлөгч" (сар бүрийн subscription).
 export type OrderTier = "full_pdf" | "premium" | "consultation";
+
+// Захиалгын төлбөрийн давтамж
+export type TierBilling = "once" | "monthly";
 
 export type OrderStatus =
   | "pending_payment"
@@ -11,8 +17,8 @@ export type OrderStatus =
   | "unlocked"
   | "cancelled";
 
+// Шинээр захиалж болох tier-ууд (full_pdf retired — PDF үнэгүй болсон).
 export const VALID_TIERS: readonly OrderTier[] = [
-  "full_pdf",
   "premium",
   "consultation",
 ] as const;
@@ -35,20 +41,26 @@ export const STATUS_TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   pending_payment: "Төлбөр хүлээгдэж буй",
   paid: "Төлбөр баталгаажсан",
-  unlocked: "PDF бэлэн",
+  unlocked: "Хандалт нээгдсэн",
   cancelled: "Цуцлагдсан",
 };
 
 export const TIER_PRICES: Record<OrderTier, number> = {
-  full_pdf: 49_900,
-  premium: 99_000,
-  consultation: 299_000,
+  full_pdf: 0, // retired — PDF үнэгүй
+  premium: 19_900, // Амьд AI зөвлөгч — сар бүр
+  consultation: 299_000, // Хувийн зөвлөгөө — нэг удаа
 };
 
 export const TIER_LABELS: Record<OrderTier, string> = {
   full_pdf: "Бүрэн PDF тайлан",
-  premium: "Premium",
+  premium: "Амьд AI зөвлөгч",
   consultation: "Хувийн зөвлөгөө",
+};
+
+export const TIER_BILLING: Record<OrderTier, TierBilling> = {
+  full_pdf: "once",
+  premium: "monthly",
+  consultation: "once",
 };
 
 export interface ReportOrder {

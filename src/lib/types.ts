@@ -36,6 +36,12 @@ export type BudgetRange =
   | "unknown";
 
 export interface QuestionnaireInput {
+  /**
+   * Хэрэглэгчийн сонгосон байшингийн загварын id (house-models.ts).
+   * "undecided" бол хараахан тодорхой загвар сонгоогүй.
+   * Загвар сонгоход material, floors, residenceType, houseSize урьдчилан бөглөгдөнө.
+   */
+  houseModelId: string;
   landOwned: YesNo;
   location: string;
   urbanOrRural: UrbanRural;

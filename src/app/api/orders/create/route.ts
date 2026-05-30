@@ -44,7 +44,7 @@ function validateInput(raw: unknown): ValidationResult {
   if (!VALID_TIERS.includes(r.tier as OrderTier)) {
     return {
       ok: false,
-      error: "tier must be one of: full_pdf, premium, consultation.",
+      error: `tier must be one of: ${VALID_TIERS.join(", ")}.`,
       field: "tier",
     };
   }
@@ -141,8 +141,31 @@ export async function POST(req: Request) {
     if (process.env.NODE_ENV !== "production") {
       console.error("[orders/create] insert error:", error);
     }
+
+    // Backend хүрэхгүй (DNS/сүлжээ/Supabase унтарсан) тохиолдлыг эелдгээр ялгана
+    const errText = `${error?.message ?? ""} ${
+      (error as { details?: string } | null)?.details ?? ""
+    }`;
+    const isUnreachable =
+      /fetch failed|ENOTFOUND|ECONNREFUSED|getaddrinfo|network|timeout/i.test(
+        errText,
+      );
+    if (isUnreachable) {
+      return NextResponse.json(
+        {
+          error:
+            "Захиалгын систем түр ажиллахгүй байна. Хэсэг хүлээгээд дахин оролдоно уу.",
+          code: "service_unavailable",
+        },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
-      { error: "Failed to create order.", code: "db_error" },
+      {
+        error: "Захиалга үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.",
+        code: "db_error",
+      },
       { status: 500 },
     );
   }

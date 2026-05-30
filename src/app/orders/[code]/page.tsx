@@ -12,6 +12,9 @@ import {
   Send,
   CreditCard,
   FileDown,
+  MessageCircle,
+  Sparkles,
+  Route,
 } from "lucide-react";
 import { TIER_LABELS, type OrderTier, type OrderStatus } from "@/lib/orders";
 import { DISCLAIMER_TEXT } from "@/lib/constants";
@@ -24,11 +27,12 @@ type OrderSafe = {
   created_at: string;
 };
 
-// Banking details — replace with real bank info before launch
+// Banking details — Vercel env-ээр тохируулна (NEXT_PUBLIC_*).
+// Prod-д заавал бодит утга тавь, эс бөгөөс placeholder харагдана.
 const BANK_DETAILS = {
-  bank: "Хаан банк",
-  account: "5XXX XXXX XXXX",
-  holder: "Байшин А-Я ХХК",
+  bank: process.env.NEXT_PUBLIC_BANK_NAME || "Хаан банк",
+  account: process.env.NEXT_PUBLIC_BANK_ACCOUNT || "5XXX XXXX XXXX",
+  holder: process.env.NEXT_PUBLIC_BANK_HOLDER || "Байшин А-Я ХХК",
 };
 
 const STATUS_BADGE: Record<OrderStatus, { label: string; cls: string }> = {
@@ -37,15 +41,18 @@ const STATUS_BADGE: Record<OrderStatus, { label: string; cls: string }> = {
     cls: "bg-amber-100 text-amber-700",
   },
   paid: { label: "Төлбөр баталгаажсан", cls: "bg-blue-100 text-blue-700" },
-  unlocked: { label: "PDF бэлэн", cls: "bg-green-100 text-green-700" },
+  unlocked: { label: "Хандалт нээгдсэн", cls: "bg-green-100 text-green-700" },
   cancelled: { label: "Цуцлагдсан", cls: "bg-red-100 text-red-700" },
 };
 
-function DownloadPanel({ code }: { code: string }) {
+// Төлбөр баталгаажиж нээгдсэний дараах "Зөвлөгч идэвхжлээ" нүүр —
+// хэрэглэгчийг амьд бүтээгдэхүүн (чат, төлөвлөгөө) рүү аваачна.
+// PDF татах нь зөвхөн нэмэлт (үнэгүй) сонголт болж үлдсэн.
+function AdvisorActivePanel({ code }: { code: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function download() {
+  async function downloadPdf() {
     setLoading(true);
     setError(null);
     try {
@@ -56,7 +63,7 @@ function DownloadPanel({ code }: { code: string }) {
       if (!res.ok) {
         if (data.code === "not_ready") {
           throw new Error(
-            "PDF одоохондоо бэлэн биш байна. Манай баг удахгүй үүсгэнэ.",
+            "Тайлан одоохондоо бэлэн биш байна. Манай баг удахгүй үүсгэнэ.",
           );
         }
         throw new Error(data.error || "Татах линк авч чадсангүй.");
@@ -70,37 +77,60 @@ function DownloadPanel({ code }: { code: string }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-green-200 p-5 sm:p-6">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center flex-shrink-0">
-          <FileDown className="w-5 h-5" />
+    <div className="bg-white rounded-2xl border-2 border-brand-200 p-5 sm:p-6">
+      {/* Celebration header */}
+      <div className="text-center mb-5">
+        <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mx-auto mb-3">
+          <Sparkles className="w-6 h-6" />
         </div>
-        <div>
-          <h2 className="text-base font-bold text-gray-900">
-            Тайлан бэлэн боллоо
-          </h2>
-          <p className="text-sm text-gray-500 leading-relaxed">
-            Доорх товчоор PDF тайлангаа татаж аваарай. Линк 1 цаг хүчинтэй.
-          </p>
-        </div>
+        <h2 className="text-lg font-bold text-gray-900 mb-1.5">
+          🎉 Таны амьд AI зөвлөгч идэвхжлээ!
+        </h2>
+        <p className="text-sm text-gray-500 leading-relaxed">
+          Төсөл чинь өөрчлөгдөх бүрд хажууд чинь байж, таны нөхцөлд тааруулсан
+          зөвлөгөө өгнө.
+        </p>
+        <span className="inline-flex items-center gap-1 mt-3 px-2.5 py-1 rounded-full bg-success-50 text-success-600 text-[11px] font-medium">
+          <CheckCircle2 className="w-3 h-3" />
+          Сарын хандалт идэвхтэй
+        </span>
       </div>
-      <button
-        onClick={download}
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            Бэлдэж байна…
-          </>
-        ) : (
-          <>
-            <FileDown className="w-4 h-4" />
-            Тайлан татах
-          </>
-        )}
-      </button>
+
+      {/* Primary CTAs — амьд бүтээгдэхүүн рүү */}
+      <div className="space-y-2.5">
+        <Link
+          href="/chat"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-brand-600 text-white font-semibold rounded-xl hover:bg-brand-700 transition-colors"
+        >
+          <MessageCircle className="w-4 h-4" />
+          Зөвлөгчтэйгөө ярих
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+        <Link
+          href="/results"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-brand-200 text-brand-700 font-semibold rounded-xl hover:border-brand-300 transition-colors"
+        >
+          <Route className="w-4 h-4" />
+          Төлөвлөгөө рүүгээ очих
+        </Link>
+        <button
+          onClick={downloadPdf}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-50 transition-colors"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Бэлдэж байна…
+            </>
+          ) : (
+            <>
+              <FileDown className="w-4 h-4" />
+              Тайлан татах (үнэгүй)
+            </>
+          )}
+        </button>
+      </div>
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 mt-3 flex items-start gap-2 text-xs text-red-700">
           <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
@@ -400,13 +430,15 @@ export default function OrderPage({ params }: { params: { code: string } }) {
         {order.status === "paid" && (
           <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 text-center">
             <p className="text-sm text-gray-600 leading-relaxed">
-              Төлбөр баталгаажсан. PDF тайлан нь удахгүй үүсэх ба нээгдсэний
-              дараа энд татах товч гарч ирнэ.
+              Төлбөр баталгаажсан. Таны амьд AI зөвлөгч удахгүй идэвхжих ба энд
+              орох холбоос гарч ирнэ.
             </p>
           </div>
         )}
 
-        {order.status === "unlocked" && <DownloadPanel code={order.order_code} />}
+        {order.status === "unlocked" && (
+          <AdvisorActivePanel code={order.order_code} />
+        )}
 
         {order.status === "cancelled" && (
           <div className="bg-white rounded-2xl border border-gray-200 p-5 sm:p-6 text-center">

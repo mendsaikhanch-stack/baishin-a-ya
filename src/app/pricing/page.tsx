@@ -8,6 +8,8 @@ type Plan = {
   name: string;
   tagline: string;
   price: string;
+  /** Үнийн дараах нэгж, ж: "сар" → "/сар" */
+  period?: string;
   href: string;
   cta: string;
   features: readonly string[];
@@ -17,58 +19,44 @@ type Plan = {
 const PLANS: readonly Plan[] = [
   {
     id: "free",
-    name: "Үнэгүй preview",
-    tagline: "Эхний шалгалт",
+    name: "Үнэгүй",
+    tagline: "Бүрэн төлөвлөгөө",
     price: "₮0",
     href: "/questionnaire",
     cta: "Шалгалт эхлэх",
     features: [
-      "Бэлэн байдлын оноо",
-      "Төслийн төрөл & төсвийн муж",
-      "Гол 3 эрсдэл",
-      "Дараагийн 3 алхам",
+      "Бэлэн байдлын оноо & төсвийн муж",
+      "9 шаттай бүрэн roadmap",
+      "30–50 даалгаврын checklist",
+      "Гол эрсдэлүүд",
+      "Төлөвлөгөөгөө PDF-ээр татах",
     ],
   },
   {
-    id: "full_pdf",
-    name: "Бүрэн PDF",
-    tagline: "Нэг удаагийн тайлан",
-    price: "₮49,900",
-    href: "/checkout/full_pdf",
-    cta: "PDF захиалах",
+    id: "premium",
+    name: "Амьд AI зөвлөгч",
+    tagline: "Өөрчлөлт болгонд тааруулна",
+    price: "₮19,900",
+    period: "сар",
+    href: "/checkout/premium",
+    cta: "Зөвлөгч идэвхжүүлэх",
     features: [
-      "9 шаттай бүрэн roadmap",
-      "30–50 даалгаврын checklist",
-      "Төсвийн задаргаа",
-      "Материалын тооцоо",
-      "Эрсдэлийн жагсаалт",
-      "PDF татаж авах",
+      "Өөрчлөлт болгонд шинэчлэгдэх зөвлөгөө",
+      "Сонголтуудыг харьцуулж тооцох",
+      "Хязгааргүй AI асуулт (контекстийг мэдсэн)",
+      "Төсөл дуустал тогтмол хандалт",
     ],
     popular: true,
   },
   {
-    id: "premium",
-    name: "Premium",
-    tagline: "Дэлгэрэнгүй тайлан",
-    price: "₮99,000",
-    href: "/checkout/premium",
-    cta: "Premium захиалах",
-    features: [
-      "Бүрэн PDF багц",
-      "Pro questions хэсэг",
-      "Дэлгэрэнгүй материалын spec",
-      "AI чатын 30 хоногийн хандалт",
-    ],
-  },
-  {
     id: "consultation",
     name: "Хувийн зөвлөгөө",
-    tagline: "Видео уулзалт",
+    tagline: "Хүний мэргэжилтэн",
     price: "₮299,000",
     href: "/checkout/consultation",
     cta: "Зөвлөгөө захиалах",
     features: [
-      "Premium багц",
+      "Амьд AI зөвлөгчийн багц",
       "1 цаг видео уулзалт",
       "Таны нөхцөлд тохирсон зөвлөгөө",
       "Дараа email follow-up",
@@ -85,14 +73,15 @@ export default function PricingPage() {
             Багцын үнэ
           </h1>
           <p className="text-gray-500 max-w-lg mx-auto">
-            Үнэгүй preview-ээс эхлээд, бэлэн болоход PDF тайлан захиалаарай.
-            Нэг удаагийн төлбөр — захиалга байхгүй.
+            Бүрэн төлөвлөгөө, roadmap, checklist, PDF татах — бүгд үнэгүй.
+            Төсөл чинь өөрчлөгдөх бүрд тааруулсан амьд AI зөвлөгчийг сар бүрээр
+            нэмж аваарай.
           </p>
         </div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 -mt-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
           {PLANS.map((plan) => (
             <div
               key={plan.id}
@@ -118,6 +107,11 @@ export default function PricingPage() {
                   <span className="text-3xl font-bold text-gray-900">
                     {plan.price}
                   </span>
+                  {plan.period && (
+                    <span className="text-sm text-gray-400 ml-1">
+                      /{plan.period}
+                    </span>
+                  )}
                 </div>
 
                 <ul className="space-y-2.5">
@@ -158,8 +152,9 @@ export default function PricingPage() {
                 </h3>
                 <p className="text-sm text-gray-500 leading-relaxed">
                   Захиалга үүсгэсний дараа банкны шилжүүлгийн заавар харагдана.
-                  Манай баг төлбөрийг шалгаад нэг ажлын өдрийн дотор PDF
-                  илгээнэ. Сэтгэл ханамжгүй бол 7 хоногийн дотор бүрэн буцаалт.
+                  Манай баг төлбөрийг шалгаад нэг ажлын өдрийн дотор зөвлөгчийн
+                  хандалтыг нээнэ. Сэтгэл ханамжгүй бол 7 хоногийн дотор бүрэн
+                  буцаалт.
                 </p>
               </div>
             </div>

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   BookOpen,
   MapPin,
@@ -109,18 +108,18 @@ export default function KnowledgePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {category.articles.map((article) => (
-                    <Link
+                    <div
                       key={article.slug}
-                      href={`/knowledge/${article.slug}`}
-                      className="bg-white p-4 rounded-xl border border-gray-100 card-shadow hover:border-brand-200 transition-all group"
+                      className="bg-white p-4 rounded-xl border border-gray-100 card-shadow"
                     >
-                      <h3 className="text-sm font-medium text-gray-900 group-hover:text-brand-600 transition-colors">
+                      <h3 className="text-sm font-medium text-gray-900">
                         {article.title}
                       </h3>
-                      <span className="text-xs text-brand-500 mt-2 inline-block">
-                        {t.knowledge.readMore} →
+                      <span className="text-[11px] text-gray-400 mt-2 inline-flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        Тун удахгүй
                       </span>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               </div>

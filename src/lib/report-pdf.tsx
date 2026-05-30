@@ -235,9 +235,10 @@ const PRO_QUESTIONS: { type: string; questions: string[] }[] = [
 
 // ── Public API ──
 export type ReportInput = {
-  order_code: string;
-  tier: OrderTier;
-  price_mnt: number;
+  /** Захиалгаас үүсгэсэн бол захиалгын код. Үнэгүй export бол хоосон. */
+  order_code?: string;
+  tier?: OrderTier;
+  price_mnt?: number;
   created_at: string;
   project_snapshot: {
     questionnaire?: Partial<QuestionnaireInput>;
@@ -255,6 +256,11 @@ function ReportDocument(props: ReportInput) {
   const q = project_snapshot?.questionnaire ?? {};
   const a = project_snapshot?.assessment;
 
+  // Захиалгаас үүсгэсэн эсэх (үгүй бол хэрэглэгчийн үнэгүй export)
+  const isOrder = !!order_code;
+  const tierLabel = tier ? TIER_LABELS[tier] : undefined;
+  const footerCode = order_code ?? "Хувийн төлөвлөгөө";
+
   const createdLabel = (() => {
     try {
       return new Date(created_at).toLocaleDateString("mn-MN");
@@ -270,22 +276,27 @@ function ReportDocument(props: ReportInput) {
         <View style={styles.header}>
           <Text style={styles.title}>Байшин А-Я — Төлөвлөлтийн тайлан</Text>
           <Text style={styles.subtitle}>
-            Захиалга #{order_code} · {TIER_LABELS[tier]} ·{" "}
-            ₮{price_mnt.toLocaleString("mn-MN")}
+            {isOrder
+              ? `Захиалга #${order_code} · ${tierLabel} · ₮${(price_mnt ?? 0).toLocaleString("mn-MN")}`
+              : `Хувийн төлөвлөгөөний тайлан · ${createdLabel}`}
           </Text>
           <View style={styles.orderMeta}>
-            <View style={styles.metaItem}>
-              <Text style={styles.metaLabel}>ЗАХИАЛГЫН КОД</Text>
-              <Text style={styles.metaValue}>{order_code}</Text>
-            </View>
+            {isOrder && (
+              <View style={styles.metaItem}>
+                <Text style={styles.metaLabel}>ЗАХИАЛГЫН КОД</Text>
+                <Text style={styles.metaValue}>{order_code}</Text>
+              </View>
+            )}
             <View style={styles.metaItem}>
               <Text style={styles.metaLabel}>ОГНОО</Text>
               <Text style={styles.metaValue}>{createdLabel}</Text>
             </View>
-            <View style={styles.metaItem}>
-              <Text style={styles.metaLabel}>БАГЦ</Text>
-              <Text style={styles.metaValue}>{TIER_LABELS[tier]}</Text>
-            </View>
+            {isOrder && tierLabel && (
+              <View style={styles.metaItem}>
+                <Text style={styles.metaLabel}>БАГЦ</Text>
+                <Text style={styles.metaValue}>{tierLabel}</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -299,14 +310,14 @@ function ReportDocument(props: ReportInput) {
         {a && <RisksSection a={a} />}
         {a && <NextActionsSection a={a} />}
 
-        <PageFooter code={order_code} pageLabel="1 / 3" />
+        <PageFooter code={footerCode} pageLabel="1 / 3" />
       </Page>
 
       {/* ═══ Page 2 — Roadmap + Checklist ═══ */}
       <Page size="A4" style={styles.page}>
         {a && <RoadmapSection a={a} />}
         {a && <ChecklistSection a={a} />}
-        <PageFooter code={order_code} pageLabel="2 / 3" />
+        <PageFooter code={footerCode} pageLabel="2 / 3" />
       </Page>
 
       {/* ═══ Page 3 — Pro questions + Disclaimer ═══ */}
@@ -315,7 +326,7 @@ function ReportDocument(props: ReportInput) {
         <View style={[styles.disclaimer, { marginTop: 20 }]}>
           <Text>{DISCLAIMER_TEXT}</Text>
         </View>
-        <PageFooter code={order_code} pageLabel="3 / 3" />
+        <PageFooter code={footerCode} pageLabel="3 / 3" />
       </Page>
     </Document>
   );

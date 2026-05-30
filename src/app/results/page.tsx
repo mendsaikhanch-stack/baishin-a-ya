@@ -28,6 +28,8 @@ import {
   Calculator,
 } from "lucide-react";
 import { useState } from "react";
+import LivePlanEditor from "@/components/results/LivePlanEditor";
+import OptionComparison from "@/components/results/OptionComparison";
 
 // ────────────────────────────────────────────
 // Helpers
@@ -130,6 +132,44 @@ function buildProfileItems(q: Partial<QuestionnaireInput>) {
 export default function ResultsPage() {
   const { assessment, questionnaire, hasHydrated } = useProjectStore();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  // ── Үнэгүй PDF export — одоогийн төлөвлөгөөг тайлан болгож татна ──
+  const handleDownloadPdf = async () => {
+    setDownloadError(null);
+    setDownloading(true);
+    try {
+      const res = await fetch("/api/report/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionnaire }),
+      });
+      if (!res.ok) {
+        let msg = "Тайлан татаж чадсангүй. Дахин оролдоно уу.";
+        try {
+          const j = await res.json();
+          if (j?.error) msg = j.error;
+        } catch {
+          /* ignore */
+        }
+        throw new Error(msg);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "baishin-tolovlogoo.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setDownloadError(e instanceof Error ? e.message : "Алдаа гарлаа.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   // ── Loading: wait for Zustand persist to rehydrate from localStorage ──
   if (!hasHydrated) {
@@ -240,6 +280,16 @@ export default function ResultsPage() {
       </section>
 
       <div className="max-w-xl mx-auto px-4 py-6 space-y-7">
+        {/* ═══════════════════════════════════════
+            SECTION 0 — Амьд засвар (хариултаа тааруулж нөлөөг шууд хар)
+            ═══════════════════════════════════════ */}
+        <LivePlanEditor />
+
+        {/* ═══════════════════════════════════════
+            SECTION 0.5 — Сонголт харьцуулах (хэмжээсээр зэрэгцүүлэх)
+            ═══════════════════════════════════════ */}
+        <OptionComparison />
+
         {/* ═══════════════════════════════════════
             SECTION 1.5 — Project type + estimated budget
             (Хоёр анхны баримжаа; албан ёсны төсөв БИШ)
@@ -474,39 +524,122 @@ export default function ResultsPage() {
         {/* ═══════════════════════════════════════
             SECTION 6 — Paid unlock block
             ═══════════════════════════════════════ */}
+        {/* ── Үнэгүй: бүрэн төлөвлөгөө + PDF татах ── */}
+        <section className="rounded-2xl border border-gray-200 bg-white overflow-hidden mb-4">
+          <div className="p-5 sm:p-7">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-2 py-0.5 rounded-full bg-success-50 text-success-600 text-[11px] font-semibold">
+                Үнэгүй
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-gray-900">
+                Бүрэн төлөвлөгөө + татах
+              </h2>
+            </div>
+            <p className="text-sm text-gray-500 leading-relaxed mb-5">
+              {roadmapPhases.length} шаттай roadmap, {totalTasks} даалгаврын
+              checklist бүгд нээлттэй. Одоогийн төлөвлөгөөгөө PDF болгож үнэгүй
+              татаарай — хариултаа өөрчлөх бүрд шинэ, тухайн агшинд тохирсон
+              тайлан гаргаж болно.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-5">
+              <Link
+                href="/roadmap"
+                className="flex items-center gap-2 bg-gray-50 rounded-lg border border-gray-100 p-3 hover:border-gray-300 transition-colors"
+              >
+                <Route className="w-4 h-4 text-brand-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-800">
+                  Бүрэн roadmap
+                </span>
+              </Link>
+              <Link
+                href="/checklist"
+                className="flex items-center gap-2 bg-gray-50 rounded-lg border border-gray-100 p-3 hover:border-gray-300 transition-colors"
+              >
+                <CheckSquare className="w-4 h-4 text-brand-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-800">
+                  Шалгах хуудас
+                </span>
+              </Link>
+              <Link
+                href="/chat"
+                className="flex items-center gap-2 bg-gray-50 rounded-lg border border-gray-100 p-3 hover:border-gray-300 transition-colors"
+              >
+                <MessageCircle className="w-4 h-4 text-brand-600 flex-shrink-0" />
+                <span className="text-sm font-medium text-gray-800">
+                  AI чат
+                </span>
+              </Link>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={downloading}
+              className={cn(
+                "flex items-center justify-center gap-2 w-full py-3.5 font-semibold rounded-xl transition-colors",
+                downloading
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 shadow-sm shadow-brand-600/20",
+              )}
+            >
+              {downloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Тайлан бэлдэж байна…
+                </>
+              ) : (
+                <>
+                  <FileDown className="w-4 h-4" />
+                  Төлөвлөгөөгөө PDF-ээр татах
+                </>
+              )}
+            </button>
+            {downloadError && (
+              <p className="text-xs text-red-600 text-center mt-2">
+                {downloadError}
+              </p>
+            )}
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════
+            SECTION 6 — Амьд AI зөвлөгч (subscription)
+            ═══════════════════════════════════════ */}
         <section className="rounded-2xl border-2 border-brand-200 bg-gradient-to-b from-white to-brand-50/30 overflow-hidden">
           <div className="p-5 sm:p-7">
             {/* Headline */}
             <h2 className="text-base sm:text-lg font-bold text-gray-900 mb-1.5">
-              Таны нөхцөлд тохируулсан бүрэн төлөвлөгөө
+              Төсөл өөрчлөгдөх бүрд тааруулсан амьд зөвлөгч
             </h2>
             <p className="text-sm text-gray-500 leading-relaxed mb-5">
-              Доорх бүх зүйлийг таны оруулсан мэдээлэл дээр тулгуурлан, таны
-              нөхцөлд тохируулж бэлдсэн.
+              Барилга бол олон сарын аялал — газар, материал, төсөв чинь замдаа
+              өөрчлөгдөнө. Өөрчлөлт болгонд тань тохирсон зөвлөгөөг AI зөвлөгч
+              өгч, сонголтуудыг харьцуулж шийдэхэд тусална.
             </p>
 
             {/* Value grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
               {[
                 {
-                  icon: Route,
-                  text: "Алхам алхмаар төлөвлөгөө",
-                  sub: `${roadmapPhases.length} шат, бүх даалгавартай`,
-                },
-                {
-                  icon: CheckSquare,
-                  text: "Шат бүрийн шалгах хуудас",
-                  sub: `${totalTasks} даалгавар, ахиц хянах`,
-                },
-                {
                   icon: MessageCircle,
-                  text: "AI зөвлөгч",
-                  sub: "Хязгааргүй асуулт асуух",
+                  text: "Өөрчлөлт болгонд тааруулсан зөвлөгөө",
+                  sub: "Газар, материал, төсөв өөрчлөгдөхөд шинэчилнэ",
                 },
                 {
-                  icon: FileDown,
-                  text: "Татаж авах тайлан",
-                  sub: "PDF хэлбэрээр хадгалах",
+                  icon: Calculator,
+                  text: "Сонголтуудыг харьцуулах",
+                  sub: "Хувилбар бүрийн үр дагаврыг тооцно",
+                },
+                {
+                  icon: Route,
+                  text: "Хязгааргүй AI асуулт",
+                  sub: "Таны бүх мэдээллийг мэдсэн зөвлөгч",
+                },
+                {
+                  icon: Users,
+                  text: "Төсөл дуустал хамт",
+                  sub: "Сар бүрийн тогтмол хандалт",
                 },
               ].map((item) => (
                 <div
@@ -531,14 +664,14 @@ export default function ResultsPage() {
               href="/pricing"
               className="flex items-center justify-center gap-2 w-full py-3.5 bg-brand-600 text-white font-semibold rounded-xl hover:bg-brand-700 active:bg-brand-800 transition-colors shadow-sm shadow-brand-600/20"
             >
-              Миний хувийн төлөвлөгөөг нээх — ₮29,900
+              Амьд AI зөвлөгч идэвхжүүлэх
               <ArrowRight className="w-4 h-4" />
             </Link>
 
             <div className="flex items-center justify-center gap-4 mt-3 text-[11px] text-gray-400">
-              <span>Нэг төслийн үнэ</span>
+              <span>Сар бүрийн төлбөр</span>
               <span className="w-1 h-1 rounded-full bg-gray-300" />
-              <span>7 хоногийн буцаалтын баталгаа</span>
+              <span>Хүссэн үедээ цуцлах</span>
             </div>
           </div>
         </section>

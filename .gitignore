@@ -12,3 +12,8 @@ next-env.d.ts
 # BNbD ingestion derivatives — regenerable from .pdf
 scripts/pdfs/*.txt
 scripts/pdfs/*.records.json
+
+# Root-level promo/marketing images (not part of the app)
+/*.jpg
+/*.jpeg
+/*.png

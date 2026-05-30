@@ -14,6 +14,7 @@ import { useProjectStore } from "@/hooks/useProject";
 import {
   TIER_PRICES,
   TIER_LABELS,
+  TIER_BILLING,
   VALID_TIERS,
   type OrderTier,
 } from "@/lib/orders";
@@ -23,9 +24,9 @@ const TIER_DESCRIPTIONS: Record<OrderTier, string> = {
   full_pdf:
     "9 шаттай бүрэн roadmap, 30–50 даалгаврын checklist, төсвийн задаргаа, материалын тооцоо, эрсдэлийн жагсаалт — нэг PDF тайлан.",
   premium:
-    "Бүрэн PDF тайлангийн агуулга дээр Pro questions, дэлгэрэнгүй материалын spec, AI чатын 30 хоногийн нээлттэй хандалт.",
+    "Төсөл чинь өөрчлөгдөх бүрд тааруулсан амьд AI зөвлөгч: газар, материал, төсвийн өөрчлөлтөд шинэчлэгдэх зөвлөгөө, сонголт харьцуулах, хязгааргүй контекст-аваре асуулт. Сар бүрийн хандалт.",
   consultation:
-    "Premium тайлан + 1 цаг видео уулзалт, таны нөхцөлд тохируулсан хувийн зөвлөгөө, дараа email-ээр follow-up.",
+    "Амьд AI зөвлөгчийн багц дээр 1 цаг видео уулзалт, таны нөхцөлд тохируулсан хувийн зөвлөгөө, дараа email-ээр follow-up.",
 };
 
 type Status = "idle" | "submitting" | "error";
@@ -174,9 +175,19 @@ export default function CheckoutPage({
             <h2 className="text-base font-bold text-gray-900">{label}</h2>
             <span className="text-xl font-bold text-brand-700">
               ₮{price.toLocaleString("mn-MN")}
+              {TIER_BILLING[tier] === "monthly" && (
+                <span className="text-sm font-normal text-gray-400 ml-0.5">
+                  /сар
+                </span>
+              )}
             </span>
           </div>
           <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+          {TIER_BILLING[tier] === "monthly" && (
+            <p className="text-xs text-gray-400 mt-2">
+              Эхний сарын хандалт. Сунгахдаа дараа сард дахин шилжүүлнэ.
+            </p>
+          )}
         </div>
 
         {/* Customer form */}
@@ -222,7 +233,7 @@ export default function CheckoutPage({
             <label className="block text-sm font-medium text-gray-800 mb-1">
               И-мэйл{" "}
               <span className="text-gray-400 text-xs font-normal">
-                (сонголттой — PDF илгээхэд хэрэгтэй)
+                (сонголттой — хандалт нээх мэдэгдэлд хэрэгтэй)
               </span>
             </label>
             <input
@@ -236,8 +247,8 @@ export default function CheckoutPage({
           </div>
 
           <p className="text-xs text-gray-400 leading-relaxed">
-            Холбоо барих мэдээлэл нь зөвхөн төлбөрийн баталгаажуулалт болон PDF
-            илгээхэд хэрэглэгдэнэ.
+            Холбоо барих мэдээлэл нь зөвхөн төлбөрийн баталгаажуулалт болон
+            зөвлөгчийн хандалт нээх мэдэгдэлд хэрэглэгдэнэ.
           </p>
 
           {error && (
