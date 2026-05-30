@@ -1,5 +1,5 @@
 // ============================================================
-// Байшин А-Я — Report PDF generator (server-only).
+// БОСГО — Report PDF generator (server-only).
 // React-PDF ашиглаж захиалгын тайланг рендерлэнэ.
 // Mongolian Cyrillic дэмжсэн Roboto-г Google Fonts CDN-ээс татна.
 // ============================================================
@@ -274,7 +274,7 @@ function ReportDocument(props: ReportInput) {
       {/* ═══ Page 1 — Summary ═══ */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
-          <Text style={styles.title}>Байшин А-Я — Төлөвлөлтийн тайлан</Text>
+          <Text style={styles.title}>БОСГО — Төлөвлөлтийн тайлан</Text>
           <Text style={styles.subtitle}>
             {isOrder
               ? `Захиалга #${order_code} · ${tierLabel} · ₮${(price_mnt ?? 0).toLocaleString("mn-MN")}`
@@ -666,7 +666,7 @@ function PageFooter({
 }) {
   return (
     <View style={styles.footer} fixed>
-      <Text>Байшин А-Я · {code}</Text>
+      <Text>БОСГО · {code}</Text>
       <Text>{pageLabel}</Text>
     </View>
   );

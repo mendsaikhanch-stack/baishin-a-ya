@@ -32,7 +32,7 @@ type OrderSafe = {
 const BANK_DETAILS = {
   bank: process.env.NEXT_PUBLIC_BANK_NAME || "Хаан банк",
   account: process.env.NEXT_PUBLIC_BANK_ACCOUNT || "5XXX XXXX XXXX",
-  holder: process.env.NEXT_PUBLIC_BANK_HOLDER || "Байшин А-Я ХХК",
+  holder: process.env.NEXT_PUBLIC_BANK_HOLDER || "БОСГО ХХК",
 };
 
 const STATUS_BADGE: Record<OrderStatus, { label: string; cls: string }> = {

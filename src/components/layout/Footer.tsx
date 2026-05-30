@@ -13,7 +13,7 @@ export default function Footer() {
               <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
                 <Home className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="font-bold text-gray-900">Байшин А-Я</span>
+              <span className="font-bold text-gray-900">БОСГО</span>
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed">
               Монголд хувийн байшин барихыг хүссэн хүн бүрт зориулсан алхам
@@ -49,7 +49,7 @@ export default function Footer() {
             ⚠️ {DISCLAIMER_TEXT}
           </p>
           <p className="text-xs text-gray-400">
-            © 2024 Байшин А-Я. Бүх эрх хуулиар хамгаалагдсан.
+            © 2024 БОСГО. Бүх эрх хуулиар хамгаалагдсан.
           </p>
         </div>
       </div>

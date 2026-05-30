@@ -1,5 +1,5 @@
 -- ============================================================
--- Байшин А-Я — Supabase SQL Schema
+-- БОСГО — Supabase SQL Schema
 -- Run this in Supabase SQL Editor to create all tables
 -- ============================================================
 

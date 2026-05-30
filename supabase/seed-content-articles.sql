@@ -1,5 +1,5 @@
 -- ============================================================
--- Байшин А-Я — content_articles RLS + sample seed
+-- БОСГО — content_articles RLS + sample seed
 -- Run inside Supabase SQL Editor.
 -- ============================================================
 

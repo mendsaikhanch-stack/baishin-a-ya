@@ -19,7 +19,7 @@ function getResend(): Resend | null {
 }
 
 function fromAddress(): string {
-  return process.env.RESEND_FROM_EMAIL || "Байшин А-Я <noreply@baishin.mn>";
+  return process.env.RESEND_FROM_EMAIL || "БОСГО <noreply@bosgo.mn>";
 }
 
 function orderUrl(order_code: string): string {

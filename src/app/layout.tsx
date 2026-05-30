@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Байшин А-Я | Байшингаа бүтээх ухаалаг туслах",
+  title: "БОСГО | Байшингаа бүтээх ухаалаг туслах",
   description:
     "Монголд хувийн байшин барихыг хүссэн хүн бүрт зориулсан алхам алхмаар төлөвлөлтийн туслах.",
 };

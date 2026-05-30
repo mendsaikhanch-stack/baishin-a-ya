@@ -38,7 +38,7 @@ export default function Features() {
       <div className="container-app">
         <div className="text-center mb-12">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-            Байшин А-Я яаж туслах вэ?
+            БОСГО яаж туслах вэ?
           </h2>
           <p className="text-gray-600 max-w-xl mx-auto">
             Таны нөхцөлд тохируулсан ухаалаг төлөвлөлтийн туслах

@@ -1,5 +1,5 @@
 // ============================================================
-// Байшин А-Я — Report order types & constants (shared client+server)
+// БОСГО — Report order types & constants (shared client+server)
 // Server-only тэмдэглэлүүд (жнь. order_code generator) ./orders.server.ts-д.
 // ============================================================
 

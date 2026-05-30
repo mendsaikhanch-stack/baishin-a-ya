@@ -24,7 +24,7 @@ export default function Header() {
             <div className="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center">
               <Home className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-lg text-gray-900">Байшин А-Я</span>
+            <span className="font-bold text-lg text-gray-900">БОСГО</span>
           </Link>
 
           {/* Desktop nav */}

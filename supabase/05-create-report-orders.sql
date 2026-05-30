@@ -1,5 +1,5 @@
 -- ============================================================
--- Байшин А-Я — report_orders table
+-- БОСГО — report_orders table
 -- Paid report MVP-ийн захиалгын суурь.
 -- Flow: Result Preview → Create Order → Manual Payment → Admin Unlock → PDF.
 -- Idempotent — олон удаа ажиллуулсан ч аюулгүй.

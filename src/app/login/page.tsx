@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 
-const RECENT_KEY = "bayshin:recent-emails";
+const RECENT_KEY = "bosgo:recent-emails";
 const MAX_RECENT = 5;
 
 function loadRecent(): string[] {

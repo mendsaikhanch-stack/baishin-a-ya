@@ -29,7 +29,7 @@ export default function Benefits() {
       <div className="container-app">
         <div className="text-center mb-10">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-            Яагаад Байшин А-Я?
+            Яагаад БОСГО?
           </h2>
         </div>
 

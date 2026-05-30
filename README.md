@@ -1,4 +1,4 @@
-# Bayshin A-Z Estimator SaaS
+# БОСГО Estimator SaaS
 
 Mongolia-based house construction cost estimator with Stripe monetization, Supabase backend, Next.js frontend, and an AI assistant layer (Claude / Gemini).
 
@@ -146,7 +146,7 @@ ADMIN_EMAIL=you@example.com             # who can call /api/admin/recalibrate
 # App URL (used by Stripe success/cancel and chat tool)
 APP_URL=http://localhost:3000           # production: https://your-app.vercel.app
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=Bayshin A-Z
+NEXT_PUBLIC_APP_NAME=БОСГО
 ```
 
 ---

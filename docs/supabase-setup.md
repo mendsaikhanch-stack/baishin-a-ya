@@ -1,4 +1,4 @@
-# Supabase Setup — Байшин А-Я
+# Supabase Setup — БОСГО
 
 Энэ гарын авлага нь шинэ Supabase project-ыг үүсгэж, app-тай холбох бүх алхмыг агуулсан.
 
@@ -43,7 +43,7 @@ ANTHROPIC_MODEL_STRONG=claude-opus-4-7
 
 # App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=Байшин А-Я
+NEXT_PUBLIC_APP_NAME=БОСГО
 ```
 
 > 💡 `.env.example`-аас хуулж эхлэх боломжтой:

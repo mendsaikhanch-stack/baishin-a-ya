@@ -1,4 +1,4 @@
-# Test Prompts — Байшин А-Я AI
+# Test Prompts — БОСГО AI
 
 Эдгээр prompt-уудаар agentic loop-ийн зан төлөв (router, guardrail, disclaimer)-ийг гараар шалгана.
 

@@ -1,4 +1,4 @@
-# Байшин А-Я — Аудитын тайлан (Current Status)
+# БОСГО — Аудитын тайлан (Current Status)
 
 **Огноо:** 2026-05-16 (MVP foundation fixes сэшний дараа)
 **Хувилбар:** v0.1.0
@@ -28,7 +28,7 @@
 ### Env
 - `.env.example`-д:
   - `RESEND_API_KEY=` (хоосон бол email no-op)
-  - `RESEND_FROM_EMAIL="Байшин А-Я <noreply@baishin.mn>"`
+  - `RESEND_FROM_EMAIL="БОСГО <noreply@baishin.mn>"`
   - `APP_URL=http://localhost:3000` (email линкэнд)
 
 ### Дизайн
@@ -117,7 +117,7 @@
 - Page 1: гарчиг + захиалгын мета (code/огноо/багц) → disclaimer → төслийн товч мэдээлэл (questionnaire) → бэлэн байдлын оноо → төрөл/төсөв → эрсдэлүүд → дараагийн алхмууд
 - Page 2: 9-шаттай roadmap (шинж бүрд title + duration + task count + expert type) → checklist (category-аар бүлэглэсэн, checkbox)
 - Page 3: мэргэжилтнээс асуух 3 төрлийн pro questions (Архитектор / Бүтээцийн инженер / Гүйцэтгэгч) → disclaimer
-- Footer бүх хуудсанд: `Байшин А-Я · order_code · X / 3`
+- Footer бүх хуудсанд: `БОСГО · order_code · X / 3`
 
 ### Тэмдэглэл
 - PDF дотор Cyrillic харагдах нь Google Fonts gstatic.com-оос Roboto-г сервер талаас татаж бүртгэсэнтэй холбоотой. Боломжтой алба нь self-hosted TTF.

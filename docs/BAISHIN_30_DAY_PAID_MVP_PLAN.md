@@ -1,4 +1,4 @@
-# Байшин А-Я — 30 хоногийн Paid MVP төлөвлөгөө
+# БОСГО — 30 хоногийн Paid MVP төлөвлөгөө
 
 **Зорилго:** Landing → Questionnaire → Result Preview → **Manual Payment** → **Admin Unlock** → **PDF Report** урсгалыг бэлэн болгох.
 

@@ -1,5 +1,5 @@
 -- ============================================================
--- Байшин А-Я — estimate_logs table
+-- БОСГО — estimate_logs table
 -- Зориулалт: /api/internal/estimate-р дамжсан бүх дуудлагыг
 -- internal-use logging, recalibration, debugging-д хадгалах.
 -- Idempotent — олон удаа ажиллуулсан ч аюулгүй.
