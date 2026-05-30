@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Home } from "lucide-react";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
@@ -20,11 +21,15 @@ export default function Header() {
       <div className="container-app">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center">
-              <Home className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-lg text-gray-900">БОСГО</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="БОСГО"
+              width={1052}
+              height={327}
+              priority
+              className="h-8 w-auto"
+            />
           </Link>
 
           {/* Desktop nav */}

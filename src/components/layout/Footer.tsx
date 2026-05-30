@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home } from "lucide-react";
+import Image from "next/image";
 import { DISCLAIMER_TEXT } from "@/lib/constants";
 
 export default function Footer() {
@@ -9,11 +9,14 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg gradient-brand flex items-center justify-center">
-                <Home className="w-3.5 h-3.5 text-white" />
-              </div>
-              <span className="font-bold text-gray-900">БОСГО</span>
+            <Link href="/" className="flex items-center mb-3">
+              <Image
+                src="/logo.png"
+                alt="БОСГО"
+                width={1052}
+                height={327}
+                className="h-7 w-auto"
+              />
             </Link>
             <p className="text-sm text-gray-500 leading-relaxed">
               Монголд хувийн байшин барихыг хүссэн хүн бүрт зориулсан алхам
@@ -49,7 +52,7 @@ export default function Footer() {
             ⚠️ {DISCLAIMER_TEXT}
           </p>
           <p className="text-xs text-gray-400">
-            © 2024 БОСГО. Бүх эрх хуулиар хамгаалагдсан.
+            © 2026 БОСГО. Бүх эрх хуулиар хамгаалагдсан.
           </p>
         </div>
       </div>
