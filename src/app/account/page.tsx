@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase-server";
+import DeleteAccount from "@/components/account/DeleteAccount";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,20 @@ export default async function AccountPage() {
           Гарах
         </button>
       </form>
+
+      <div className="pt-2 border-t border-gray-200">
+        <DeleteAccount />
+      </div>
+
+      <p className="text-center text-xs text-gray-400 pt-2">
+        <Link href="/privacy" className="underline">
+          Нууцлалын бодлого
+        </Link>{" "}
+        ·{" "}
+        <Link href="/terms" className="underline">
+          Үйлчилгээний нөхцөл
+        </Link>
+      </p>
     </div>
   );
 }

@@ -39,9 +39,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-sm text-gray-900 mb-3">Бусад</h4>
             <nav className="flex flex-col gap-2">
-              <Link href="#" className="text-sm text-gray-500 hover:text-brand-600">Нууцлалын бодлого</Link>
-              <Link href="#" className="text-sm text-gray-500 hover:text-brand-600">Үйлчилгээний нөхцөл</Link>
-              <Link href="#" className="text-sm text-gray-500 hover:text-brand-600">Холбоо барих</Link>
+              <Link href="/privacy" className="text-sm text-gray-500 hover:text-brand-600">Нууцлалын бодлого</Link>
+              <Link href="/terms" className="text-sm text-gray-500 hover:text-brand-600">Үйлчилгээний нөхцөл</Link>
+              <a href="mailto:geregekiosk@gmail.com" className="text-sm text-gray-500 hover:text-brand-600">Холбоо барих</a>
             </nav>
           </div>
         </div>
