@@ -9,7 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-// Hero photo: free Unsplash license (modern home at dusk) — public/hero-house.jpg
+// Hero photo: free Unsplash license (modern architect home at dusk) — public/hero-house.jpg
 export default function Hero() {
   return (
     <section className="relative overflow-hidden gradient-hero">
@@ -99,7 +99,7 @@ export default function Hero() {
               className="absolute -inset-4 rounded-[2rem] bg-gradient-to-tr from-brand-400/30 via-transparent to-accent-300/40 blur-2xl"
             />
 
-            <div className="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5">
               <Image
                 src="/hero-house.jpg"
                 alt="Орчин үеийн хувийн байшин"
