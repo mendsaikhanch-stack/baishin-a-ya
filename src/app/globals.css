@@ -10,6 +10,15 @@
   }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @layer components {
   .container-app {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
   ArrowRight,
   Shield,
@@ -8,8 +7,9 @@ import {
   Clock,
   Sparkles,
 } from "lucide-react";
+import HeroImage from "./HeroImage";
 
-// Hero photo: free Unsplash license (modern architect home at dusk) — public/hero-house.jpg
+// Hero photo rotates per visit — see HeroImage (free Unsplash license, public/)
 export default function Hero() {
   return (
     <section className="relative overflow-hidden gradient-hero">
@@ -100,14 +100,7 @@ export default function Hero() {
             />
 
             <div className="relative aspect-[4/3] overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5">
-              <Image
-                src="/hero-house.jpg"
-                alt="Орчин үеийн хувийн байшин"
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
+              <HeroImage />
               {/* subtle gradient for text legibility on overlapping cards */}
               <div
                 aria-hidden
