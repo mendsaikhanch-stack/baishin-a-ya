@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAIReply, type ChatTurn } from '@/lib/ai/reply'
 import { checkChatRateLimit, getClientIp } from '@/lib/rate-limit'
+import { logChatQuestion } from '@/lib/knowledge/log'
 
 export const maxDuration = 60
 export const runtime = 'nodejs'
@@ -108,6 +109,11 @@ export async function POST(req: Request) {
 
   try {
     const reply = await getAIReply(history, body.context ?? {})
+    const lastUser = history[history.length - 1]
+    const hadContext = Boolean(
+      body.context && JSON.stringify(body.context) !== '{}',
+    )
+    logChatQuestion(lastUser.content, hadContext)
     return NextResponse.json({ reply })
   } catch (e) {
     const err = e as Error

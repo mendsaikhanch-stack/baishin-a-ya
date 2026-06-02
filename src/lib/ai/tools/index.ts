@@ -10,19 +10,19 @@ export const TOOL_SCHEMAS: ToolSchema[] = [
   {
     name: 'get_building_info',
     description:
-      'Supabase READ-ONLY: project / norm (БНбД) / roadmap / checklist уншина. Хариу нь "found" талбартай — false бол өгөгдөл олдсонгүй.',
+      'Supabase READ-ONLY: project / norm (БНбД) / guide (мэдлэгийн сан) / roadmap / checklist уншина. Хариу нь "found" талбартай — false бол өгөгдөл олдсонгүй.',
     parameters: {
       type: 'object',
       properties: {
         type: {
           type: 'string',
-          enum: ['project', 'norm', 'roadmap', 'checklist'],
+          enum: ['project', 'norm', 'guide', 'roadmap', 'checklist'],
           description:
-            'project=хэрэглэгчийн төсөл, norm=БНбД заалт, roadmap=алхамууд, checklist=шалгах жагсаалт',
+            'project=хэрэглэгчийн төсөл, norm=БНбД заалт, guide=БОСГО-ийн мэдлэгийн сангийн гарын авлага (газар, суурь, материал, төсөв, улирал г.м.), roadmap=алхамууд, checklist=шалгах жагсаалт',
         },
         query: {
           type: 'string',
-          description: 'Хайлтын текст (norm-д ашиглана)',
+          description: 'Хайлтын текст (norm болон guide-д ашиглана)',
         },
         project_id: {
           type: 'string',

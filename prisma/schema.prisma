@@ -110,6 +110,7 @@ model ChatMessage {
 model ContentArticle {
   id        String   @id @default(uuid())
   category  String
+  subcategory String?
   title     String
   slug      String   @unique
   summary   String?
@@ -123,6 +124,21 @@ model ContentArticle {
   @@index([category])
   @@index([slug])
   @@map("content_articles")
+}
+
+/// Chat дахь хэрэглэгчийн асуултын лог — мэдлэгийн санг баяжуулах эх сурвалж.
+model ChatQuestion {
+  id          String    @id @default(uuid())
+  question    String
+  char_len    Int       @default(0)
+  had_context Boolean   @default(false)
+  topic       String?
+  processed_at DateTime?
+  created_at  DateTime  @default(now())
+
+  @@index([processed_at])
+  @@index([created_at])
+  @@map("chat_questions")
 }
 
 model ExpertCategory {

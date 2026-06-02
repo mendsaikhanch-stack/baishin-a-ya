@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase-server'
 
 export type BuildingInfoInput = {
-  type: 'project' | 'norm' | 'roadmap' | 'checklist'
+  type: 'project' | 'norm' | 'roadmap' | 'checklist' | 'guide'
   query?: string
   project_id?: string
 }
@@ -46,6 +46,29 @@ export async function getBuildingInfo(
       if (error) return { found: false, reason: error.message }
       if (!data || data.length === 0) {
         return { found: false, reason: 'Дотоод санд тохирох БНбД олдсонгүй' }
+      }
+      return { found: true, data }
+    }
+
+    case 'guide': {
+      const query = (input.query ?? '').trim()
+      if (!query) {
+        return { found: false, reason: 'guide-д query шаардлагатай' }
+      }
+      const safe = query.replace(/[%_\\]/g, (m) => '\\' + m)
+      const pattern = `%${safe}%`
+      const { data, error } = await supabase
+        .from('content_articles')
+        .select('title, summary, content, slug')
+        .eq('category', 'guide')
+        .eq('published', true)
+        .or(
+          `title.ilike.${pattern},summary.ilike.${pattern},content.ilike.${pattern}`,
+        )
+        .limit(3)
+      if (error) return { found: false, reason: error.message }
+      if (!data || data.length === 0) {
+        return { found: false, reason: 'Мэдлэгийн сангаас тохирох нийтлэл олдсонгүй' }
       }
       return { found: true, data }
     }

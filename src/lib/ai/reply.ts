@@ -43,13 +43,20 @@ export async function getAIReply(
   }
 
   const trimmed = history.slice(-MAX_HISTORY_TURNS)
-  const input: ProviderInput = {
+  return runProviderChain({
     history: trimmed,
     context,
     systemPrompt: SYSTEM_PROMPT,
     contextBlock: buildContextBlock(context),
-  }
+  })
+}
 
+/**
+ * Generic single-shot generation over the configured provider chain (with
+ * fallback). Used for non-chat tasks like knowledge enrichment where a custom
+ * system prompt is supplied.
+ */
+export async function runProviderChain(input: ProviderInput): Promise<string> {
   const chain = resolveProviderChain()
   const isDev = process.env.NODE_ENV !== 'production'
   const errors: { provider: string; error: string }[] = []
