@@ -40,10 +40,11 @@ export default function PageBackground() {
         alt=""
         fill
         sizes="100vw"
-        className="object-cover blur-[2px]"
+        className="object-cover blur-[1px]"
       />
-      {/* Soft white wash — keeps the photo faint and content legible. */}
-      <div className="absolute inset-0 bg-white/80" />
+      {/* Soft white wash — keeps content legible while the photo stays visible.
+          Lighter at the top (more colour) and stronger lower down. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/45 via-white/55 to-white/75" />
     </div>
   );
 }
