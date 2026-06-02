@@ -51,7 +51,7 @@ const PLANS: readonly Plan[] = [
   {
     id: "consultation",
     name: "Хувийн зөвлөгөө",
-    tagline: "Хүний мэргэжилтэн",
+    tagline: "Мэргэжлийн хүн",
     price: "₮299,000",
     href: "/checkout/consultation",
     cta: "Зөвлөгөө захиалах",
