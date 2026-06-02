@@ -40,7 +40,13 @@ function readClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) return null
-  return createClient(url, key, { auth: { persistSession: false } })
+  // Never let a missing/malformed URL crash a build or render — degrade to
+  // the curated repo articles instead (e.g. Preview env without Supabase set).
+  try {
+    return createClient(url, key, { auth: { persistSession: false } })
+  } catch {
+    return null
+  }
 }
 
 function repoToDisplay(a: (typeof GUIDE_ARTICLES)[number]): DisplayArticle {
