@@ -19,6 +19,7 @@ import {
   type OrderTier,
 } from "@/lib/orders";
 import { DISCLAIMER_TEXT } from "@/lib/constants";
+import BankApps from "@/components/payment/BankApps";
 
 const TIER_DESCRIPTIONS: Record<OrderTier, string> = {
   full_pdf:
@@ -276,6 +277,9 @@ export default function CheckoutPage({
             )}
           </button>
         </form>
+
+        {/* Supported bank apps */}
+        <BankApps title="Аль ч банкны аппаар төлбөрөө хийх боломжтой" />
 
         {/* Disclaimer */}
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 mt-6 flex items-start gap-2.5">

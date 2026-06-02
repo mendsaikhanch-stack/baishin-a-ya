@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { TIER_LABELS, type OrderTier, type OrderStatus } from "@/lib/orders";
 import { DISCLAIMER_TEXT } from "@/lib/constants";
+import BankApps from "@/components/payment/BankApps";
 
 type OrderSafe = {
   order_code: string;
@@ -358,6 +359,8 @@ export default function OrderPage({ params }: { params: { code: string } }) {
                 </span>
               </div>
             </div>
+
+            <BankApps />
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mt-4 text-xs text-blue-700 leading-relaxed">
               ℹ️ Төлбөр баталгаажуулах ажлыг манай баг гар аргаар хийдэг тул
