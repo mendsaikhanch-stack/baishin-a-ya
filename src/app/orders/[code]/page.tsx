@@ -215,7 +215,7 @@ export default function OrderPage({ params }: { params: { code: string } }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <p className="text-sm">Захиалгыг ачааллаж байна…</p>
@@ -226,7 +226,7 @@ export default function OrderPage({ params }: { params: { code: string } }) {
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-6 h-6" />
@@ -253,7 +253,7 @@ export default function OrderPage({ params }: { params: { code: string } }) {
   const isPending = order.status === "pending_payment";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
+    <div className="min-h-screen py-8 sm:py-12">
       <div className="max-w-lg mx-auto px-4 space-y-5">
         {/* Order summary card */}
         <div className="bg-white rounded-2xl border-2 border-brand-200 p-5 sm:p-6">

@@ -115,7 +115,7 @@ export default function AdminKnowledgePage() {
 
   if (authError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl border border-gray-100 card-shadow p-8 max-w-sm text-center">
           <ShieldAlert className="w-10 h-10 text-amber-500 mx-auto mb-3" />
           <h1 className="text-lg font-semibold text-gray-900 mb-1">
@@ -138,7 +138,7 @@ export default function AdminKnowledgePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="container-app max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <div>

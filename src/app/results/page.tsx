@@ -174,7 +174,7 @@ export default function ResultsPage() {
   // ── Loading: wait for Zustand persist to rehydrate from localStorage ──
   if (!hasHydrated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <p className="text-sm">Үр дүнг ачааллаж байна…</p>
@@ -186,7 +186,7 @@ export default function ResultsPage() {
   // ── No assessment: show explicit CTA back to questionnaire (no auto-redirect) ──
   if (!assessment) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mx-auto mb-4">
             <FileQuestion className="w-6 h-6" />
@@ -230,7 +230,7 @@ export default function ResultsPage() {
   const totalTasks = checklistItems.length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* ═══════════════════════════════════════
           SECTION 1 — Readiness summary
           ═══════════════════════════════════════ */}

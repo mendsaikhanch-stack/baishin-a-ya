@@ -111,7 +111,7 @@ const EXPERTS = [
 
 export default function ExpertsPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="container-app max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-10">

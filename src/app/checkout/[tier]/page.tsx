@@ -53,7 +53,7 @@ export default function CheckoutPage({
   // ── Invalid tier ──
   if (!isTier(rawTier)) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-6 h-6" />
@@ -82,7 +82,7 @@ export default function CheckoutPage({
   // ── Waiting for Zustand persist hydration ──
   if (!hasHydrated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3 text-gray-400">
           <Loader2 className="w-6 h-6 animate-spin" />
           <p className="text-sm">Ачааллаж байна…</p>
@@ -94,7 +94,7 @@ export default function CheckoutPage({
   // ── No project data ──
   if (!assessment) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="max-w-md w-full bg-white border border-gray-200 rounded-2xl p-6 sm:p-8 text-center">
           <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center mx-auto mb-4">
             <FileQuestion className="w-6 h-6" />
@@ -160,7 +160,7 @@ export default function CheckoutPage({
   const description = TIER_DESCRIPTIONS[tier];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 sm:py-12">
+    <div className="min-h-screen py-8 sm:py-12">
       <div className="max-w-lg mx-auto px-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
           Захиалга үүсгэх

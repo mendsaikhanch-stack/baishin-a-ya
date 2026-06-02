@@ -66,7 +66,7 @@ const PLANS: readonly Plan[] = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="bg-white border-b">
         <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16 text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
